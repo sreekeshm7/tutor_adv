@@ -1,0 +1,14 @@
+langchain
+langchain-core
+langchain-community
+langchain-groq
+groq
+pydantic
+streamlit
+python-dotenv
+docx
+PyPDF2
+requests
+bs4
+
+
