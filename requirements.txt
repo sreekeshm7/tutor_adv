@@ -6,7 +6,7 @@ groq
 pydantic
 streamlit
 python-dotenv
-docx
+python-docx
 PyPDF2
 requests
 bs4
