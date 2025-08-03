@@ -165,7 +165,7 @@ st.set_page_config(
     initial_sidebar_state="expanded"
 )
 
-# --- Ultra-Enhanced Modern UI CSS ---
+# --- Ultra-Enhanced Modern UI CSS with Reduced Font Sizes ---
 st.markdown("""
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600;700&family=Playfair+Display:wght@400;500;600;700;800&display=swap');
@@ -408,11 +408,11 @@ st.markdown("""
             background: linear-gradient(135deg, var(--info-color), #2563EB);
         }
         
-        /* Ultra-Enhanced Content Styling */
+        /* Ultra-Enhanced Content Styling with Reduced Font Sizes */
         .response-content {
             padding: 3.5rem;
-            font-size: 1.8rem;
-            line-height: 2.1;
+            font-size: 1.4rem;  /* Reduced from 1.8rem */
+            line-height: 1.8;   /* Reduced from 2.1 */
             color: var(--text-primary);
             font-family: 'Inter', sans-serif;
             max-width: none;
@@ -457,7 +457,7 @@ st.markdown("""
         }
         
         .response-content h2 {
-            font-size: 2.3rem;
+            font-size: 1.8rem;  /* Reduced from 2.3rem */
             font-weight: 700;
             color: var(--accent-primary) !important;
             margin-top: 3rem;
@@ -479,7 +479,7 @@ st.markdown("""
         }
         
         .response-content h3 {
-            font-size: 2rem;
+            font-size: 1.6rem;  /* Reduced from 2rem */
             font-weight: 600;
             color: var(--accent-secondary) !important;
             margin-top: 2.5rem;
@@ -497,7 +497,7 @@ st.markdown("""
         }
         
         .response-content h4 {
-            font-size: 1.8rem;
+            font-size: 1.4rem;  /* Reduced from 1.8rem */
             font-weight: 600;
             color: var(--text-secondary) !important;
             margin-top: 2rem;
@@ -507,13 +507,13 @@ st.markdown("""
         .response-content p {
             margin-bottom: 2.5rem;
             text-align: justify;
-            font-size: 1.8rem;
-            line-height: 2.1;
+            font-size: 1.4rem;  /* Reduced from 1.8rem */
+            line-height: 1.8;   /* Reduced from 2.1 */
             text-indent: 2rem;
         }
         
         .response-content p:first-of-type {
-            font-size: 2rem;
+            font-size: 1.6rem;  /* Reduced from 2rem */
             font-weight: 500;
             color: var(--text-secondary);
             text-indent: 0;
@@ -522,13 +522,13 @@ st.markdown("""
         .response-content ul, .response-content ol {
             margin: 2.5rem 0;
             padding-left: 3rem;
-            font-size: 1.8rem;
+            font-size: 1.4rem;  /* Reduced from 1.8rem */
         }
         
         .response-content li {
             margin-bottom: 1.2rem;
-            font-size: 1.8rem;
-            line-height: 2;
+            font-size: 1.4rem;  /* Reduced from 1.8rem */
+            line-height: 1.7;   /* Reduced from 2 */
             position: relative;
         }
         
@@ -542,7 +542,7 @@ st.markdown("""
             font-weight: 600;
         }
         
-        /* Advanced Mathematical Content */
+        /* Advanced Mathematical Content with Reduced Font Sizes */
         .response-content code {
             background: rgba(15, 23, 42, 0.95);
             color: var(--accent-primary);
@@ -550,7 +550,7 @@ st.markdown("""
             border-radius: 10px;
             font-family: 'JetBrains Mono', monospace;
             border: 1px solid var(--border-primary);
-            font-size: 1.6rem;
+            font-size: 1.2rem;  /* Reduced from 1.6rem */
             font-weight: 500;
             box-shadow: 0 2px 8px var(--shadow-dark);
         }
@@ -562,8 +562,8 @@ st.markdown("""
             border: 2px solid var(--border-primary);
             overflow-x: auto;
             margin: 3rem 0;
-            font-size: 1.5rem;
-            line-height: 1.7;
+            font-size: 1.2rem;  /* Reduced from 1.5rem */
+            line-height: 1.5;   /* Reduced from 1.7 */
             box-shadow: 
                 0 8px 25px var(--shadow-dark),
                 inset 0 1px 0 rgba(255, 255, 255, 0.1);
@@ -590,7 +590,7 @@ st.markdown("""
             margin: 3rem 0;
             border-radius: 0 15px 15px 0;
             font-style: italic;
-            font-size: 1.7rem;
+            font-size: 1.3rem;  /* Reduced from 1.7rem */
             position: relative;
         }
         
@@ -604,13 +604,13 @@ st.markdown("""
             opacity: 0.5;
         }
         
-        /* Enhanced Table Design */
+        /* Enhanced Table Design with Reduced Font Sizes */
         .response-content table {
             width: 100%;
             border-collapse: separate;
             border-spacing: 0;
             margin: 3rem 0;
-            font-size: 1.6rem;
+            font-size: 1.2rem;  /* Reduced from 1.6rem */
             border-radius: 12px;
             overflow: hidden;
             box-shadow: 0 8px 25px var(--shadow-dark);
@@ -622,7 +622,7 @@ st.markdown("""
             padding: 1.5rem;
             text-align: left;
             font-weight: 700;
-            font-size: 1.7rem;
+            font-size: 1.3rem;  /* Reduced from 1.7rem */
         }
         
         .response-content td {
