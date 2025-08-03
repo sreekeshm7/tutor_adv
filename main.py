@@ -7,259 +7,320 @@ from docx import Document
 from PyPDF2 import PdfReader
 import requests
 from bs4 import BeautifulSoup
+import time
 
-# --- Enhanced System Prompt for Maximum Mathematical Detail ---
+# --- Ultra-Enhanced System Prompt for Maximum Theoretical Detail ---
 SYSTEM_PROMPT = """
-You are Physics GPT, an advanced AI physics tutor created by Sreekesh M, with comprehensive knowledge across all physics domains, specializing in competitive exams (IIT-JAM, CSIR-NET, GATE Physics, IIT-JEE Advanced, JEST, TIFR).
+You are Physics GPT, an advanced AI physics tutor created by Sreekesh M, representing the pinnacle of physics education technology. You possess comprehensive knowledge across all physics domains and specialize in competitive exams (IIT-JAM, CSIR-NET, GATE Physics, IIT-JEE Advanced, JEST, TIFR).
 
-MATHEMATICAL DERIVATION REQUIREMENTS - PROVIDE EXTREMELY DETAILED STEP-BY-STEP DERIVATIONS:
+THEORETICAL ANALYSIS REQUIREMENTS - PROVIDE EXTREMELY COMPREHENSIVE THEORETICAL CONTENT:
 
-1. **COMPLETE MATHEMATICAL RIGOR**: Show every single mathematical step, no matter how elementary
-2. **DETAILED ALGEBRAIC MANIPULATIONS**: Include all intermediate algebraic steps and simplifications
-3. **COMPREHENSIVE SUBSTITUTIONS**: Show all substitutions and their justifications
-4. **MULTIPLE DERIVATION METHODS**: Provide alternative approaches when applicable
-5. **DIMENSIONAL ANALYSIS**: Include units and dimensional consistency checks at each step
-6. **APPROXIMATIONS EXPLAINED**: Clearly state and justify all approximations used
-7. **BOUNDARY CONDITIONS**: Specify all initial and boundary conditions
-8. **MATHEMATICAL TECHNIQUES**: Explain the mathematical techniques and tools used
+1. **COMPLETE THEORETICAL FRAMEWORK**: Develop comprehensive theoretical understanding from fundamental principles
+2. **MULTIPLE THEORETICAL PERSPECTIVES**: Analyze from classical, quantum, relativistic, and modern theoretical viewpoints
+3. **EXTENSIVE MATHEMATICAL RIGOR**: Include complete mathematical derivations with every intermediate step explained
+4. **DEEP CONCEPTUAL ANALYSIS**: Provide profound conceptual insights and physical intuition
+5. **THEORETICAL CONNECTIONS**: Link concepts across all physics domains extensively
+6. **HISTORICAL THEORETICAL DEVELOPMENT**: Trace evolution of theoretical understanding
+7. **ADVANCED THEORETICAL EXTENSIONS**: Include cutting-edge theoretical developments
+8. **PEDAGOGICAL EXCELLENCE**: Structure content for maximum educational impact
 
-RESPONSE REQUIREMENTS - PROVIDE EXTENSIVE, DETAILED CONTENT:
+COMPREHENSIVE PHYSICS MASTERY:
+- Mathematical Physics: Advanced vector/tensor calculus, Complex analysis, Special functions, Green's functions, Group theory, Differential geometry, Topology, Lie algebras
+- Classical Mechanics: Analytical mechanics, Hamiltonian/Lagrangian formalism, Canonical transformations, Integrable systems, Chaos theory, Relativity, Field theory
+- Quantum Mechanics: Wave mechanics, Matrix mechanics, Path integrals, Second quantization, Many-body theory, Quantum field theory, Quantum information, Decoherence theory
+- Electromagnetic Theory: Maxwell theory, Gauge theory, Electromagnetic radiation, Plasma physics, Metamaterials, Quantum electrodynamics
+- Statistical Mechanics: Ensemble theory, Phase transitions, Critical phenomena, Non-equilibrium physics, Information theory, Complexity theory
+- Solid State Physics: Many-body theory, Electronic structure, Topological phases, Quantum materials, Superconductivity, Magnetism
+- Atomic Physics: Quantum optics, Laser physics, Cold atoms, Precision measurements, AMO physics
+- Nuclear Physics: Nuclear models, Radioactivity, Nuclear reactions, Nuclear astrophysics
+- Particle Physics: Standard Model, Beyond SM physics, Symmetries, QCD, Electroweak theory
+- Condensed Matter: Strongly correlated systems, Emergent phenomena, Quantum phase transitions
+- Astrophysics: General relativity, Cosmology, Black holes, Gravitational waves, Dark matter/energy
+- Computational Physics: Numerical methods, Simulation techniques, Machine learning applications
 
-1. **COMPREHENSIVE COVERAGE**: Always provide thorough, detailed explanations covering all aspects of the topic
-2. **MULTIPLE PERSPECTIVES**: Approach each topic from theoretical, mathematical, experimental, and applied perspectives
-3. **EXTENSIVE MATHEMATICAL TREATMENT**: Include complete mathematical derivations with every intermediate step
-4. **EXTENSIVE EXAMPLES**: Provide multiple worked examples with detailed solutions showing all steps
-5. **CROSS-CONNECTIONS**: Link concepts across different physics domains extensively
-6. **CURRENT RESEARCH**: Include latest developments and research trends
-7. **HISTORICAL CONTEXT**: Provide background and evolution of concepts
-8. **PRACTICAL APPLICATIONS**: Discuss real-world applications and technologies
+ULTRA-DETAILED THEORETICAL RESPONSE STRUCTURE (MANDATORY SECTIONS):
 
-Complete Physics Expertise:
-- Mathematical Physics: Vector/Tensor calculus, Complex analysis, Special functions, Green's functions, Group theory, Differential equations, Fourier analysis, Variational methods, Perturbation theory, Integral transforms
-- Classical Mechanics: Newtonian mechanics, Lagrangian/Hamiltonian formalism, Rigid body dynamics, Oscillations, Chaos theory, Relativity, Continuum mechanics, Fluid dynamics, Elasticity theory
-- Quantum Mechanics: Wave mechanics, Matrix mechanics, Scattering theory, Many-body systems, Quantum field theory, Quantum information, Quantum computing, Quantum optics, Path integrals
-- Electromagnetic Theory: Electrostatics, Magnetostatics, Maxwell equations, Wave propagation, Plasma physics, Superconductivity, Metamaterials, Photonics, Antenna theory
-- Thermodynamics & Statistical Mechanics: Laws of thermodynamics, Kinetic theory, Ensembles, Phase transitions, Critical phenomena, Non-equilibrium physics, Information theory
-- Solid State Physics: Crystal structure, Band theory, Semiconductors, Magnetism, Superconductivity, Defects, Phase diagrams, Quantum materials, Surface physics
-- Atomic & Molecular Physics: Atomic structure, Spectroscopy, Lasers, Molecular bonding, Quantum optics, AMO physics, Cold atoms, Atomic collisions
-- Nuclear & Particle Physics: Nuclear structure, Radioactivity, Standard model, Symmetries, Accelerators, Cosmology, Dark matter, Neutrino physics, QCD
-- Electronics: Semiconductor devices, Analog/Digital circuits, Microprocessors, Signal processing, Control systems, VLSI, Quantum electronics, Power electronics
-- Optics: Geometrical optics, Wave optics, Fourier optics, Nonlinear optics, Laser physics, Fiber optics, Holography, Metamaterials, Plasmonics
-- Biophysics: Biomolecular structure, Protein folding, Membrane physics, Neural networks, Medical imaging, Systems biology, Biological motors
-- Astrophysics: Stellar physics, Galactic dynamics, Cosmology, Black holes, Gravitational waves, Exoplanets, Dark energy, Cosmic rays
-- Condensed Matter: Many-body theory, Strongly correlated systems, Topological phases, Quantum materials, Superconductivity, Magnetism
-- Plasma Physics: MHD theory, Fusion physics, Space plasma, Laboratory plasma, Astrophysical plasma, Plasma instabilities
-- Computational Physics: Numerical methods, Monte Carlo simulations, DFT, Molecular dynamics, Machine learning, High-performance computing
+1. **CONCEPTUAL FOUNDATION & OVERVIEW** (4-5 comprehensive paragraphs)
+   - Immediate comprehensive answer with theoretical context
+   - Fundamental concepts and their theoretical significance
+   - Position within the broader theoretical framework of physics
+   - Key theoretical principles and postulates involved
+   - Conceptual roadmap for the theoretical development
 
-DETAILED RESPONSE STRUCTURE (ALWAYS INCLUDE ALL SECTIONS WITH MAXIMUM MATHEMATICAL DETAIL):
+2. **HISTORICAL THEORETICAL DEVELOPMENT** (5-6 paragraphs)
+   - Historical evolution of theoretical understanding
+   - Key theoretical breakthroughs and paradigm shifts
+   - Contributions of major physicists with theoretical context
+   - Evolution of mathematical formalism and theoretical tools
+   - Theoretical controversies and their resolutions
+   - Timeline of theoretical developments
 
-1. **IMMEDIATE OVERVIEW** (3-4 paragraphs)
-   - Direct answer to the question
-   - Key concepts and importance
-   - Context within physics
-   - Mathematical framework overview
+3. **COMPREHENSIVE MATHEMATICAL FRAMEWORK** (Extremely detailed theoretical treatment)
+   - **Fundamental Postulates**: State all theoretical assumptions and axioms
+   - **Mathematical Foundations**: Complete theoretical mathematical framework
+   - **Step-by-Step Theoretical Derivations**: Every mathematical step with theoretical justification
+   - **Alternative Theoretical Approaches**: Multiple derivation methods and perspectives
+   - **Theoretical Approximations**: Justification and validity ranges
+   - **Mathematical Theorems**: Relevant mathematical results and proofs
+   - **Symmetry Analysis**: Theoretical symmetries and conservation laws
+   - **Dimensional Analysis**: Theoretical scaling and dimensional relationships
 
-2. **FUNDAMENTAL PRINCIPLES** (5-6 paragraphs)
-   - Basic physical principles involved with mathematical foundations
-   - Historical development and key scientists
-   - Conceptual foundation and intuitive understanding
-   - Mathematical postulates and axioms
+4. **EXTENSIVE THEORETICAL EXAMPLES** (Multiple comprehensive examples)
+   - **Fundamental Example**: Basic theoretical application with complete analysis
+   - **Advanced Example**: Complex theoretical problem with detailed solution
+   - **Research-Level Example**: Cutting-edge theoretical application
+   - **Cross-Domain Example**: Theoretical connections to other physics areas
+   - Each example includes:
+     * Theoretical setup and assumptions
+     * Complete mathematical theoretical analysis
+     * Physical interpretation and theoretical insights
+     * Connections to broader theoretical frameworks
+     * Limitations and theoretical extensions
 
-3. **COMPLETE MATHEMATICAL FRAMEWORK** (Extremely detailed mathematical treatment)
-   - **Starting Equations**: State all fundamental equations with full notation
-   - **Assumption Justification**: Explain every assumption made
-   - **Step-by-Step Derivations**: Show every algebraic manipulation
-   - **Intermediate Results**: Highlight important intermediate equations
-   - **Alternative Methods**: Provide different derivation approaches
-   - **Limiting Cases**: Analyze special cases and limits
-   - **Dimensional Analysis**: Check units at each major step
-   - **Mathematical Tools**: Explain all mathematical techniques used
+5. **EXPERIMENTAL THEORETICAL CONNECTION** (4-5 paragraphs)
+   - Theoretical predictions and experimental verification
+   - Key experiments that validated theoretical frameworks
+   - Theoretical interpretation of experimental results
+   - Measurement theory and theoretical foundations
+   - Theoretical limits of experimental precision
+   - Future experimental tests of theoretical predictions
 
-4. **EXTENSIVE WORKED EXAMPLES** (Multiple examples with complete solutions)
-   - **Example 1**: Basic application with every calculation step shown
-   - **Example 2**: Intermediate complexity with detailed solution
-   - **Example 3**: Advanced problem with comprehensive analysis
-   - **Example 4**: Real-world application with numerical calculations
-   - Each example should include:
-     * Given information clearly stated
-     * Approach and strategy explanation
-     * Complete mathematical solution with all steps
-     * Unit analysis and dimensional checks
-     * Physical interpretation of results
-     * Alternative solution methods
+6. **ADVANCED THEORETICAL TOPICS** (5-6 paragraphs)
+   - Current theoretical research frontiers
+   - Unresolved theoretical questions and challenges
+   - Theoretical extensions and generalizations
+   - Connections to cutting-edge theoretical physics
+   - Theoretical implications for future physics
+   - Speculative theoretical developments
 
-5. **DETAILED EXPERIMENTAL ASPECTS** (4-5 paragraphs)
-   - Key experiments and discoveries with quantitative details
-   - Measurement techniques and instruments with specifications
-   - Laboratory methods and procedures with mathematical analysis
-   - Data analysis and interpretation with statistical methods
-   - Error analysis and uncertainty calculations
+7. **THEORETICAL APPLICATIONS & TECHNOLOGY** (4-5 paragraphs)
+   - Theoretical foundations of technological applications
+   - How theoretical understanding enables technology
+   - Theoretical limits and possibilities
+   - Future theoretical-driven technologies
+   - Theoretical optimization of existing applications
 
-6. **COMPREHENSIVE APPLICATIONS AND TECHNOLOGY** (5-6 paragraphs)
-   - Real-world applications with quantitative analysis
-   - Industrial and technological uses with specifications
-   - Engineering applications with design calculations
-   - Emerging technologies with performance metrics
-   - Economic and societal impact analysis
+8. **CROSS-DOMAIN THEORETICAL CONNECTIONS** (4-5 paragraphs)
+   - Theoretical unification with other physics domains
+   - Universal theoretical principles and patterns
+   - Theoretical analogies and correspondences
+   - Interdisciplinary theoretical applications
+   - Theoretical bridges between classical and quantum physics
 
-7. **ADVANCED MATHEMATICAL TOPICS** (4-5 paragraphs)
-   - Advanced mathematical techniques and their applications
-   - Computational methods and numerical approaches
-   - Approximation methods and their validity ranges
-   - Mathematical modeling and simulation approaches
-   - Current research directions with mathematical frameworks
+9. **THEORETICAL PROBLEM-SOLVING STRATEGIES** (3-4 paragraphs)
+   - Theoretical approaches to problem analysis
+   - Mathematical techniques and theoretical tools
+   - Theoretical approximation methods
+   - Systematic theoretical problem-solving frameworks
 
-8. **CROSS-DOMAIN MATHEMATICAL CONNECTIONS** (3-4 paragraphs)
-   - Mathematical links to other physics areas
-   - Interdisciplinary mathematical techniques
-   - Unified mathematical frameworks
-   - Common mathematical structures across physics
+10. **COMPREHENSIVE EXAM PERSPECTIVE** (3-4 paragraphs)
+    - Theoretical importance for competitive exams
+    - Common theoretical question patterns and approaches
+    - Theoretical problem-solving strategies for exams
+    - Key theoretical results students must master
+    - Theoretical connections emphasized in exams
 
-9. **COMPREHENSIVE EXAM PERSPECTIVE** (3-4 paragraphs)
-   - Importance for competitive exams with weightage analysis
-   - Common question types and mathematical patterns
-   - Problem-solving strategies and mathematical techniques
-   - Previous year question analysis with solution methods
-   - Time management and calculation shortcuts
+11. **FUTURE THEORETICAL DIRECTIONS** (3-4 paragraphs)
+    - Emerging theoretical paradigms and frameworks
+    - Theoretical challenges and opportunities
+    - Theoretical implications for physics education
+    - Recommended theoretical study pathways
 
-10. **FURTHER MATHEMATICAL EXPLORATION** (3 paragraphs)
-    - Advanced mathematical topics for deeper study
-    - Research opportunities with mathematical requirements
-    - Recommended mathematical resources and textbooks
-    - Software tools and computational resources
+THEORETICAL PRESENTATION GUIDELINES:
+- Each major section: minimum 4-5 substantial paragraphs
+- Mathematical expressions: proper LaTeX formatting with theoretical context
+- Theoretical derivations: complete with conceptual explanations
+- Multiple theoretical perspectives: compare and contrast different approaches
+- Theoretical notation: consistent and clearly defined
+- Conceptual diagrams: describe theoretical relationships verbally
+- Theoretical commentary: explain physical meaning of mathematical results
 
-MATHEMATICAL PRESENTATION GUIDELINES:
-- Use proper LaTeX formatting: $E = mc^2$, $\psi(x,t) = A e^{i(kx - \omega t)}$, $\frac{\partial^2 \psi}{\partial x^2} + \frac{2m}{\hbar^2}(E-V)\psi = 0$
-- Show every algebraic step: If going from $a = b + c$ to $a - b = c$, show the subtraction explicitly
-- Include all mathematical manipulations: factoring, expanding, substituting, integrating, differentiating
-- Number important equations: (1), (2), (3), etc.
-- Provide mathematical commentary: "Substituting equation (2) into (1)..."
-- Show units throughout calculations: $[E] = \text{kg⋅m²⋅s⁻²} = \text{J}$
-- Include mathematical proofs where relevant
-- Use multiple mathematical approaches when possible
+THEORETICAL CONTENT REQUIREMENTS:
+- Responses must be extremely comprehensive (minimum 4000+ words)
+- Every theoretical concept thoroughly explained
+- Multiple theoretical viewpoints presented
+- Complete theoretical mathematical treatment
+- Extensive theoretical examples and applications
+- Current theoretical research developments
+- Theoretical connections across physics domains
+- Pedagogically structured for maximum theoretical understanding
 
-CONTENT GUIDELINES FOR MAXIMUM DETAIL:
-- Each section should be substantial (minimum 4-5 paragraphs each)
-- Mathematical derivations should show every step with explanations
-- Include multiple sub-headings for organization
-- Provide extensive mathematical analysis and computations
-- Include numerical values, constants, and units throughout
-- Use clear, pedagogical mathematical explanations
-- Connect mathematical theory to practical applications
-- Include current research with mathematical content
-- Provide complete mathematical solutions to all examples
+THEORETICAL EXCELLENCE STANDARDS:
+- Theoretical accuracy at the highest level
+- Comprehensive theoretical coverage of all aspects
+- Clear theoretical explanations with deep insights
+- Extensive theoretical mathematical development
+- Strong theoretical connections and unifying principles
+- Current theoretical research integration
+- Exceptional theoretical pedagogical quality
 
-ALWAYS ENSURE:
-- Responses are extremely comprehensive and detailed (minimum 3000+ words)
-- ALL mathematical derivations show EVERY step
-- Multiple examples with complete mathematical solutions
-- Current research and mathematical developments included
-- Content is mathematically rigorous and exam-focused
-- Cross-connections to mathematical techniques in other areas
-- Mathematical notation is consistent and clearly explained
-
-Your goal is to provide the most comprehensive, mathematically detailed, and educational physics content possible with complete step-by-step derivations.
+Your mission is to provide the most comprehensive, theoretically rigorous, and educationally excellent physics content possible, establishing new standards for theoretical physics education.
 """
 
 # --- Streamlit Config ---
 st.set_page_config(
-    page_title="🧠 Physics GPT by Sreekesh M",
+    page_title="🧠 Physics GPT Pro by Sreekesh M",
     page_icon="🧠",
     layout="wide",
     initial_sidebar_state="expanded"
 )
 
-# --- Enhanced Dark Mode CSS with Better Response UI ---
+# --- Ultra-Enhanced Modern UI CSS ---
 st.markdown("""
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600;700&family=Playfair+Display:wght@400;500;600;700;800&display=swap');
         
-        /* Root variables for dark theme */
+        /* Advanced CSS Variables */
         :root {
-            --bg-primary: #0a0e27;
-            --bg-secondary: #1a1d35;
-            --bg-tertiary: #2a2d4a;
-            --text-primary: #f8fafc;
-            --text-secondary: #cbd5e1;
-            --text-accent: #94a3b8;
-            --accent-primary: #00d9ff;
-            --accent-secondary: #7c3aed;
-            --accent-gradient: linear-gradient(135deg, #00d9ff 0%, #7c3aed 100%);
-            --border-color: #334155;
-            --shadow-light: rgba(0, 217, 255, 0.1);
-            --shadow-dark: rgba(0, 0, 0, 0.4);
-            --success-color: #10b981;
-            --warning-color: #f59e0b;
-            --error-color: #ef4444;
+            --bg-primary: #0B0F1A;
+            --bg-secondary: #151B2E;
+            --bg-tertiary: #1E2A42;
+            --bg-quaternary: #2A3856;
+            --text-primary: #F8FAFC;
+            --text-secondary: #E2E8F0;
+            --text-tertiary: #CBD5E1;
+            --text-accent: #94A3B8;
+            --accent-primary: #00E5FF;
+            --accent-secondary: #8B5CF6;
+            --accent-tertiary: #06B6D4;
+            --accent-gradient: linear-gradient(135deg, #00E5FF 0%, #8B5CF6 50%, #06B6D4 100%);
+            --accent-gradient-reverse: linear-gradient(135deg, #06B6D4 0%, #8B5CF6 50%, #00E5FF 100%);
+            --border-primary: #334155;
+            --border-secondary: #475569;
+            --shadow-primary: rgba(0, 229, 255, 0.15);
+            --shadow-secondary: rgba(139, 92, 246, 0.15);
+            --shadow-dark: rgba(0, 0, 0, 0.5);
+            --success-color: #10B981;
+            --warning-color: #F59E0B;
+            --error-color: #EF4444;
+            --info-color: #3B82F6;
+            --glass-bg: rgba(30, 41, 59, 0.8);
+            --glass-border: rgba(148, 163, 184, 0.2);
         }
         
+        /* Global Styling */
         html, body, [class*="css"] {
             font-family: 'Inter', sans-serif;
-            background: linear-gradient(135deg, var(--bg-primary) 0%, var(--bg-secondary) 100%);
+            background: radial-gradient(ellipse at top, var(--bg-secondary) 0%, var(--bg-primary) 100%);
             color: var(--text-primary);
+            scroll-behavior: smooth;
         }
         
         .stApp {
-            background: linear-gradient(135deg, #0a0e27 0%, #1a1d35 100%);
+            background: var(--bg-primary);
+            background-image: 
+                radial-gradient(circle at 20% 80%, rgba(0, 229, 255, 0.1) 0%, transparent 50%),
+                radial-gradient(circle at 80% 20%, rgba(139, 92, 246, 0.1) 0%, transparent 50%),
+                radial-gradient(circle at 40% 40%, rgba(6, 182, 212, 0.05) 0%, transparent 50%);
         }
         
-        /* Main container styling */
+        /* Enhanced Container Design */
         .main-container {
-            background: rgba(42, 45, 74, 0.95);
-            border-radius: 24px;
-            padding: 2.5rem;
-            margin: 1rem;
-            box-shadow: 0 25px 50px var(--shadow-dark);
-            backdrop-filter: blur(20px);
-            border: 1px solid var(--border-color);
+            background: var(--glass-bg);
+            backdrop-filter: blur(25px);
+            border-radius: 28px;
+            padding: 3rem;
+            margin: 1.5rem;
+            box-shadow: 
+                0 32px 64px var(--shadow-dark),
+                0 0 0 1px var(--glass-border),
+                inset 0 1px 0 rgba(255, 255, 255, 0.1);
+            position: relative;
+            overflow: hidden;
         }
         
-        /* Enhanced title with Physics GPT branding */
+        .main-container::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 2px;
+            background: var(--accent-gradient);
+            border-radius: 28px 28px 0 0;
+        }
+        
+        /* Advanced Title Design */
         .main-title {
             text-align: center;
-            font-size: 3.5rem;
-            font-weight: 800;
+            font-size: clamp(2.5rem, 5vw, 4rem);
+            font-weight: 900;
+            font-family: 'Playfair Display', serif;
             background: var(--accent-gradient);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
             margin-bottom: 0.5rem;
-            text-shadow: 0 0 40px rgba(0, 217, 255, 0.4);
-            letter-spacing: -1px;
+            text-shadow: 0 0 60px rgba(0, 229, 255, 0.5);
+            letter-spacing: -2px;
+            position: relative;
+        }
+        
+        .main-title::after {
+            content: '';
+            position: absolute;
+            bottom: -10px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 100px;
+            height: 3px;
+            background: var(--accent-gradient);
+            border-radius: 2px;
         }
         
         .subtitle {
             text-align: center;
-            font-size: 1.4rem;
+            font-size: clamp(1.1rem, 2.5vw, 1.6rem);
             color: var(--text-secondary);
-            margin-bottom: 2.5rem;
+            margin-bottom: 3rem;
             font-weight: 500;
+            line-height: 1.6;
         }
         
         .creator-badge {
             text-align: center;
-            margin-bottom: 2rem;
+            margin-bottom: 2.5rem;
+            position: relative;
         }
         
         .creator-badge span {
             background: var(--accent-gradient);
             color: white;
-            padding: 0.5rem 1.5rem;
-            border-radius: 25px;
-            font-size: 0.95rem;
-            font-weight: 600;
-            box-shadow: 0 4px 15px var(--shadow-light);
+            padding: 0.8rem 2rem;
+            border-radius: 50px;
+            font-size: 1.1rem;
+            font-weight: 700;
+            box-shadow: 
+                0 8px 25px var(--shadow-primary),
+                0 4px 12px var(--shadow-secondary);
+            position: relative;
+            overflow: hidden;
         }
         
-        /* Enhanced Response Section UI */
+        .creator-badge span::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+            transition: left 0.5s;
+        }
+        
+        .creator-badge:hover span::before {
+            left: 100%;
+        }
+        
+        /* Revolutionary Response Design */
         .response-header {
             background: var(--accent-gradient);
             color: white;
-            padding: 1.5rem 2rem;
-            border-radius: 20px 20px 0 0;
-            font-size: 1.6rem;
-            font-weight: 700;
+            padding: 2rem 2.5rem;
+            border-radius: 24px 24px 0 0;
+            font-size: clamp(1.4rem, 3vw, 1.8rem);
+            font-weight: 800;
             text-align: center;
-            box-shadow: 0 4px 20px var(--shadow-light);
+            box-shadow: 0 8px 32px var(--shadow-primary);
             position: relative;
             overflow: hidden;
         }
@@ -267,47 +328,68 @@ st.markdown("""
         .response-header::before {
             content: '';
             position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
             background: linear-gradient(45deg, transparent 30%, rgba(255,255,255,0.1) 50%, transparent 70%);
-            animation: shimmer 3s infinite;
+            animation: shimmer 4s infinite;
         }
         
         @keyframes shimmer {
-            0% { transform: translateX(-100%); }
-            100% { transform: translateX(100%); }
+            0% { transform: translateX(-100%) translateY(-100%) rotate(45deg); }
+            100% { transform: translateX(100%) translateY(100%) rotate(45deg); }
         }
         
         .response-container {
-            background: linear-gradient(135deg, rgba(42, 45, 74, 0.98) 0%, rgba(51, 65, 85, 0.95) 100%);
-            border-radius: 0 0 20px 20px;
-            border: 1px solid var(--border-color);
-            box-shadow: 0 15px 35px var(--shadow-dark);
+            background: linear-gradient(145deg, var(--glass-bg) 0%, rgba(46, 57, 86, 0.95) 100%);
+            border-radius: 0 0 24px 24px;
+            border: 1px solid var(--glass-border);
+            box-shadow: 
+                0 20px 50px var(--shadow-dark),
+                inset 0 1px 0 rgba(255, 255, 255, 0.1);
             margin-top: 0;
             overflow: hidden;
+            position: relative;
         }
         
         .response-meta {
-            background: rgba(30, 41, 59, 0.8);
-            padding: 1rem 2rem;
-            border-bottom: 1px solid var(--border-color);
+            background: rgba(15, 23, 42, 0.9);
+            padding: 1.5rem 2.5rem;
+            border-bottom: 1px solid var(--border-primary);
             display: flex;
             justify-content: space-between;
             align-items: center;
             flex-wrap: wrap;
-            gap: 1rem;
+            gap: 1.5rem;
         }
         
         .response-badge {
             background: var(--accent-gradient);
             color: white;
-            padding: 0.4rem 1rem;
-            border-radius: 20px;
-            font-size: 0.9rem;
+            padding: 0.6rem 1.4rem;
+            border-radius: 25px;
+            font-size: 1rem;
             font-weight: 600;
-            box-shadow: 0 2px 8px var(--shadow-light);
+            box-shadow: 0 4px 15px var(--shadow-primary);
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .response-badge::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
+            transition: left 0.5s;
+        }
+        
+        .response-badge:hover::before {
+            left: 100%;
         }
         
         .response-badge.style {
@@ -315,494 +397,753 @@ st.markdown("""
         }
         
         .response-badge.level {
-            background: linear-gradient(135deg, var(--warning-color), #d97706);
+            background: linear-gradient(135deg, var(--warning-color), #D97706);
         }
         
         .response-badge.enhanced {
-            background: linear-gradient(135deg, var(--error-color), #dc2626);
+            background: linear-gradient(135deg, var(--error-color), #DC2626);
         }
         
+        .response-badge.detail {
+            background: linear-gradient(135deg, var(--info-color), #2563EB);
+        }
+        
+        /* Ultra-Enhanced Content Styling */
         .response-content {
-            padding: 3rem;
-            font-size: 1.7rem;  /* Increased from 1.6rem */
-            line-height: 2.0;   /* Increased line height for better readability */
+            padding: 3.5rem;
+            font-size: 1.8rem;
+            line-height: 2.1;
             color: var(--text-primary);
             font-family: 'Inter', sans-serif;
             max-width: none;
             overflow-wrap: break-word;
+            position: relative;
+        }
+        
+        .response-content::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 4px;
+            height: 100%;
+            background: var(--accent-gradient);
+            border-radius: 2px;
         }
         
         .response-content h1 {
-            font-size: 2.4rem;  /* Increased from 2.2rem */
-            font-weight: 700;
+            font-size: 2.6rem;
+            font-weight: 800;
+            font-family: 'Playfair Display', serif;
+            background: var(--accent-gradient);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
             border-bottom: 3px solid var(--accent-primary);
-            padding-bottom: 0.8rem;
-            margin-top: 2.5rem;
-            margin-bottom: 1.5rem;
-            color: var(--text-primary) !important;
+            padding-bottom: 1rem;
+            margin-top: 3rem;
+            margin-bottom: 2rem;
+            position: relative;
+        }
+        
+        .response-content h1::after {
+            content: '';
+            position: absolute;
+            bottom: -3px;
+            left: 0;
+            width: 80px;
+            height: 3px;
+            background: var(--accent-secondary);
+            border-radius: 2px;
         }
         
         .response-content h2 {
-            font-size: 2.1rem;  /* Increased from 1.9rem */
-            font-weight: 600;
+            font-size: 2.3rem;
+            font-weight: 700;
             color: var(--accent-primary) !important;
-            margin-top: 2.5rem;
-            margin-bottom: 1.3rem;
+            margin-top: 3rem;
+            margin-bottom: 1.8rem;
+            position: relative;
+            padding-left: 1.5rem;
+        }
+        
+        .response-content h2::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 6px;
+            height: 60%;
+            background: var(--accent-gradient);
+            border-radius: 3px;
         }
         
         .response-content h3 {
-            font-size: 1.9rem;  /* Increased from 1.7rem */
+            font-size: 2rem;
+            font-weight: 600;
+            color: var(--accent-secondary) !important;
+            margin-top: 2.5rem;
+            margin-bottom: 1.5rem;
+            position: relative;
+            padding-left: 1rem;
+        }
+        
+        .response-content h3::before {
+            content: '▶';
+            position: absolute;
+            left: 0;
+            color: var(--accent-tertiary);
+            font-size: 0.8em;
+        }
+        
+        .response-content h4 {
+            font-size: 1.8rem;
             font-weight: 600;
             color: var(--text-secondary) !important;
             margin-top: 2rem;
             margin-bottom: 1.2rem;
         }
         
-        .response-content h4 {
-            font-size: 1.7rem;
-            font-weight: 600;
-            color: var(--text-accent) !important;
-            margin-top: 1.8rem;
-            margin-bottom: 1rem;
+        .response-content p {
+            margin-bottom: 2.5rem;
+            text-align: justify;
+            font-size: 1.8rem;
+            line-height: 2.1;
+            text-indent: 2rem;
         }
         
-        .response-content p {
-            margin-bottom: 2rem;  /* Increased spacing */
-            text-align: justify;
-            font-size: 1.7rem;  /* Ensure paragraphs use larger font */
-            line-height: 2.0;
+        .response-content p:first-of-type {
+            font-size: 2rem;
+            font-weight: 500;
+            color: var(--text-secondary);
+            text-indent: 0;
         }
         
         .response-content ul, .response-content ol {
-            margin: 2rem 0;
-            padding-left: 2.5rem;
-            font-size: 1.7rem;  /* Ensure lists use larger font */
+            margin: 2.5rem 0;
+            padding-left: 3rem;
+            font-size: 1.8rem;
         }
         
         .response-content li {
-            margin-bottom: 1rem;  /* Increased spacing between list items */
-            font-size: 1.7rem;
-            line-height: 1.9;
+            margin-bottom: 1.2rem;
+            font-size: 1.8rem;
+            line-height: 2;
+            position: relative;
         }
         
-        /* Enhanced mathematical content styling */
-        .response-content code {
-            background: rgba(30, 41, 59, 0.9);
+        .response-content ul li::marker {
             color: var(--accent-primary);
-            padding: 0.5rem 1rem;  /* Increased padding */
-            border-radius: 8px;
-            font-family: 'JetBrains Mono', monospace;
-            border: 1px solid var(--border-color);
-            font-size: 1.5rem;  /* Larger code font */
-            font-weight: 500;
+            font-size: 1.5em;
         }
         
-        .response-content pre {
-            background: rgba(15, 23, 42, 0.95);
-            padding: 2.5rem;  /* Increased padding */
-            border-radius: 15px;
-            border: 2px solid var(--border-color);
-            overflow-x: auto;
-            margin: 2.5rem 0;
-            font-size: 1.4rem;  /* Larger pre-formatted text */
-            line-height: 1.6;
-            box-shadow: 0 4px 15px var(--shadow-dark);
-        }
-        
-        /* Mathematical equation styling */
-        .response-content .math {
-            font-size: 1.8rem !important;
-            color: var(--accent-primary) !important;
-            background: rgba(30, 41, 59, 0.3);
-            padding: 0.8rem 1.2rem;
-            border-radius: 8px;
-            margin: 1rem 0;
-            border: 1px solid var(--border-color);
-            display: inline-block;
-        }
-        
-        .response-content blockquote {
-            border-left: 4px solid var(--accent-primary);
-            background: rgba(30, 41, 59, 0.4);
-            padding: 1.5rem 2rem;
-            margin: 2rem 0;
-            border-radius: 0 12px 12px 0;
-            font-style: italic;
-            font-size: 1.6rem;
-        }
-        
-        /* Table styling for mathematical content */
-        .response-content table {
-            width: 100%;
-            border-collapse: collapse;
-            margin: 2rem 0;
-            font-size: 1.6rem;
-        }
-        
-        .response-content th, .response-content td {
-            border: 1px solid var(--border-color);
-            padding: 1rem;
-            text-align: left;
-            background: rgba(30, 41, 59, 0.3);
-        }
-        
-        .response-content th {
-            background: rgba(0, 217, 255, 0.2);
+        .response-content ol li::marker {
+            color: var(--accent-secondary);
             font-weight: 600;
         }
         
+        /* Advanced Mathematical Content */
+        .response-content code {
+            background: rgba(15, 23, 42, 0.95);
+            color: var(--accent-primary);
+            padding: 0.6rem 1.2rem;
+            border-radius: 10px;
+            font-family: 'JetBrains Mono', monospace;
+            border: 1px solid var(--border-primary);
+            font-size: 1.6rem;
+            font-weight: 500;
+            box-shadow: 0 2px 8px var(--shadow-dark);
+        }
+        
+        .response-content pre {
+            background: linear-gradient(145deg, rgba(15, 23, 42, 0.98), rgba(30, 41, 59, 0.95));
+            padding: 3rem;
+            border-radius: 18px;
+            border: 2px solid var(--border-primary);
+            overflow-x: auto;
+            margin: 3rem 0;
+            font-size: 1.5rem;
+            line-height: 1.7;
+            box-shadow: 
+                0 8px 25px var(--shadow-dark),
+                inset 0 1px 0 rgba(255, 255, 255, 0.1);
+            position: relative;
+        }
+        
+        .response-content pre::before {
+            content: 'Mathematical Analysis';
+            position: absolute;
+            top: -1px;
+            left: 20px;
+            background: var(--accent-gradient);
+            color: white;
+            padding: 0.3rem 1rem;
+            border-radius: 0 0 8px 8px;
+            font-size: 0.9rem;
+            font-weight: 600;
+        }
+        
+        .response-content blockquote {
+            border-left: 5px solid var(--accent-primary);
+            background: linear-gradient(135deg, rgba(0, 229, 255, 0.1), rgba(139, 92, 246, 0.05));
+            padding: 2rem 2.5rem;
+            margin: 3rem 0;
+            border-radius: 0 15px 15px 0;
+            font-style: italic;
+            font-size: 1.7rem;
+            position: relative;
+        }
+        
+        .response-content blockquote::before {
+            content: '"';
+            position: absolute;
+            top: -10px;
+            left: 20px;
+            font-size: 4rem;
+            color: var(--accent-primary);
+            opacity: 0.5;
+        }
+        
+        /* Enhanced Table Design */
+        .response-content table {
+            width: 100%;
+            border-collapse: separate;
+            border-spacing: 0;
+            margin: 3rem 0;
+            font-size: 1.6rem;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 8px 25px var(--shadow-dark);
+        }
+        
+        .response-content th {
+            background: var(--accent-gradient);
+            color: white;
+            padding: 1.5rem;
+            text-align: left;
+            font-weight: 700;
+            font-size: 1.7rem;
+        }
+        
+        .response-content td {
+            background: rgba(30, 41, 59, 0.7);
+            padding: 1.5rem;
+            border-bottom: 1px solid var(--border-primary);
+        }
+        
+        .response-content tr:hover td {
+            background: rgba(0, 229, 255, 0.1);
+        }
+        
+        /* Footer and Signature */
         .response-footer {
-            background: rgba(15, 23, 42, 0.8);
-            padding: 1.5rem 2rem;
-            border-top: 1px solid var(--border-color);
+            background: linear-gradient(135deg, rgba(15, 23, 42, 0.95), rgba(30, 41, 59, 0.9));
+            padding: 2rem 2.5rem;
+            border-top: 1px solid var(--border-primary);
             text-align: center;
+            position: relative;
+        }
+        
+        .response-footer::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 1px;
+            background: var(--accent-gradient);
         }
         
         .physics-gpt-signature {
-            color: var(--text-accent);
-            font-size: 1.1rem;
+            color: var(--text-tertiary);
+            font-size: 1.2rem;
             font-style: italic;
+            line-height: 1.6;
         }
         
         .physics-gpt-signature strong {
             background: var(--accent-gradient);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
-            font-weight: 700;
+            font-weight: 800;
         }
         
-        /* Action buttons styling */
+        /* Action Buttons */
         .action-buttons {
-            background: rgba(30, 41, 59, 0.6);
-            padding: 1.5rem 2rem;
-            border-top: 1px solid var(--border-color);
+            background: rgba(30, 41, 59, 0.7);
+            padding: 2rem 2.5rem;
+            border-top: 1px solid var(--border-primary);
         }
         
         .action-buttons h3 {
             color: var(--text-primary) !important;
             text-align: center;
-            margin-bottom: 1.5rem;
-            font-size: 1.5rem;
-            font-weight: 600;
+            margin-bottom: 2rem;
+            font-size: 1.6rem;
+            font-weight: 700;
         }
         
-        /* Form and input styling */
+        /* Enhanced Form Styling */
         .stTextArea > div > div > textarea {
-            background-color: rgba(30, 41, 59, 0.9) !important;
-            border: 2px solid var(--border-color) !important;
-            border-radius: 12px !important;
+            background: linear-gradient(145deg, rgba(30, 41, 59, 0.95), rgba(51, 65, 85, 0.9)) !important;
+            border: 2px solid var(--border-primary) !important;
+            border-radius: 15px !important;
             color: var(--text-primary) !important;
-            font-size: 1.2rem !important;
-            padding: 1.2rem !important;
+            font-size: 1.3rem !important;
+            padding: 1.5rem !important;
+            transition: all 0.3s ease !important;
         }
         
         .stTextArea > div > div > textarea:focus {
             border-color: var(--accent-primary) !important;
-            box-shadow: 0 0 0 3px var(--shadow-light) !important;
+            box-shadow: 0 0 0 4px var(--shadow-primary) !important;
+            background: rgba(30, 41, 59, 0.98) !important;
         }
         
         .stSelectbox > div > div > div {
-            background-color: rgba(30, 41, 59, 0.9) !important;
-            border: 2px solid var(--border-color) !important;
-            border-radius: 10px !important;
+            background: linear-gradient(145deg, rgba(30, 41, 59, 0.95), rgba(51, 65, 85, 0.9)) !important;
+            border: 2px solid var(--border-primary) !important;
+            border-radius: 12px !important;
             color: var(--text-primary) !important;
-            font-size: 1.1rem !important;
+            font-size: 1.2rem !important;
         }
         
         .stMultiSelect > div > div > div {
-            background-color: rgba(30, 41, 59, 0.9) !important;
-            border: 2px solid var(--border-color) !important;
-            border-radius: 10px !important;
+            background: linear-gradient(145deg, rgba(30, 41, 59, 0.95), rgba(51, 65, 85, 0.9)) !important;
+            border: 2px solid var(--border-primary) !important;
+            border-radius: 12px !important;
         }
         
         .stTextInput > div > div > input {
-            background-color: rgba(30, 41, 59, 0.9) !important;
-            border: 2px solid var(--border-color) !important;
-            border-radius: 10px !important;
+            background: linear-gradient(145deg, rgba(30, 41, 59, 0.95), rgba(51, 65, 85, 0.9)) !important;
+            border: 2px solid var(--border-primary) !important;
+            border-radius: 12px !important;
             color: var(--text-primary) !important;
-            font-size: 1.1rem !important;
+            font-size: 1.2rem !important;
         }
         
-        /* Enhanced button styling */
+        /* Revolutionary Button Design */
         .stButton > button {
             background: var(--accent-gradient) !important;
             color: white !important;
             border: none !important;
-            border-radius: 12px !important;
-            padding: 0.9rem 2.5rem !important;
-            font-size: 1.2rem !important;
-            font-weight: 600 !important;
-            transition: all 0.3s ease !important;
-            box-shadow: 0 6px 20px var(--shadow-light) !important;
+            border-radius: 15px !important;
+            padding: 1.2rem 3rem !important;
+            font-size: 1.3rem !important;
+            font-weight: 700 !important;
+            transition: all 0.4s ease !important;
+            box-shadow: 0 8px 25px var(--shadow-primary) !important;
+            position: relative !important;
+            overflow: hidden !important;
+        }
+        
+        .stButton > button::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
+            transition: left 0.5s;
         }
         
         .stButton > button:hover {
-            transform: translateY(-3px) !important;
-            box-shadow: 0 10px 30px var(--shadow-light) !important;
+            transform: translateY(-4px) !important;
+            box-shadow: 0 15px 40px var(--shadow-primary) !important;
         }
         
-        /* Sidebar styling */
+        .stButton > button:hover::before {
+            left: 100%;
+        }
+        
+        /* Enhanced Sidebar */
         .css-1d391kg {
-            background: rgba(10, 14, 39, 0.95) !important;
-            border-right: 1px solid var(--border-color) !important;
+            background: linear-gradient(180deg, rgba(11, 15, 26, 0.98), rgba(21, 27, 46, 0.95)) !important;
+            border-right: 2px solid var(--border-primary) !important;
+            backdrop-filter: blur(20px) !important;
         }
         
         .sidebar-content {
-            background: rgba(30, 41, 59, 0.7) !important;
-            border-radius: 12px !important;
-            padding: 1.2rem !important;
-            margin-bottom: 1rem !important;
-            border: 1px solid var(--border-color) !important;
+            background: var(--glass-bg) !important;
+            backdrop-filter: blur(15px) !important;
+            border-radius: 15px !important;
+            padding: 1.5rem !important;
+            margin-bottom: 1.5rem !important;
+            border: 1px solid var(--glass-border) !important;
+            box-shadow: 0 4px 15px var(--shadow-dark) !important;
         }
         
-        /* Physics domains grid */
+        /* Physics Domain Grid */
         .physics-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 1rem;
-            margin: 1.5rem 0;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 1.5rem;
+            margin: 2rem 0;
         }
         
         .physics-domain {
-            background: linear-gradient(135deg, rgba(30, 41, 59, 0.9), rgba(51, 65, 85, 0.7));
-            border-radius: 12px;
-            padding: 1.2rem;
+            background: var(--glass-bg);
+            backdrop-filter: blur(15px);
+            border-radius: 15px;
+            padding: 1.5rem;
             text-align: center;
-            border: 2px solid var(--border-color);
-            transition: all 0.3s ease;
+            border: 2px solid var(--glass-border);
+            transition: all 0.4s ease;
             cursor: pointer;
-            font-size: 1rem;
-            font-weight: 500;
+            font-size: 1.1rem;
+            font-weight: 600;
             color: var(--text-primary);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .physics-domain::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: var(--accent-gradient);
+            opacity: 0;
+            transition: opacity 0.3s ease;
+            z-index: -1;
         }
         
         .physics-domain:hover {
             border-color: var(--accent-primary);
-            transform: translateY(-5px);
-            box-shadow: 0 10px 30px var(--shadow-light);
-            background: linear-gradient(135deg, rgba(0, 217, 255, 0.2), rgba(124, 58, 237, 0.1));
+            transform: translateY(-8px) scale(1.02);
+            box-shadow: 0 15px 40px var(--shadow-primary);
+            color: white;
         }
         
-        /* Comprehensive topics box */
+        .physics-domain:hover::before {
+            opacity: 0.9;
+        }
+        
+        /* Comprehensive Topics */
         .comprehensive-topics {
-            background: rgba(16, 185, 129, 0.1);
-            border-radius: 12px;
-            padding: 1.2rem;
-            margin: 1rem 0;
-            border-left: 4px solid var(--success-color);
+            background: linear-gradient(135deg, rgba(16, 185, 129, 0.15), rgba(6, 182, 212, 0.1));
+            border-radius: 15px;
+            padding: 1.8rem;
+            margin: 1.5rem 0;
+            border-left: 5px solid var(--success-color);
             border: 1px solid rgba(16, 185, 129, 0.3);
+            box-shadow: 0 4px 15px rgba(16, 185, 129, 0.1);
         }
         
-        /* Metrics styling */
+        /* Metrics and UI Elements */
         .css-1r6slb0 {
-            background: rgba(30, 41, 59, 0.7) !important;
-            border: 1px solid var(--border-color) !important;
-            border-radius: 12px !important;
+            background: var(--glass-bg) !important;
+            backdrop-filter: blur(15px) !important;
+            border: 1px solid var(--glass-border) !important;
+            border-radius: 15px !important;
+            box-shadow: 0 4px 15px var(--shadow-dark) !important;
         }
         
-        /* Expandable sections */
         .streamlit-expanderHeader {
-            background: rgba(30, 41, 59, 0.7) !important;
-            border: 1px solid var(--border-color) !important;
-            border-radius: 10px !important;
+            background: var(--glass-bg) !important;
+            border: 1px solid var(--glass-border) !important;
+            border-radius: 12px !important;
+            color: var(--text-primary) !important;
+            font-size: 1.2rem !important;
+        }
+        
+        .css-1cpxqw2 {
+            background: var(--glass-bg) !important;
+            border: 2px dashed var(--accent-primary) !important;
+            border-radius: 15px !important;
+            color: var(--text-primary) !important;
+        }
+        
+        /* Slider and other components */
+        .stSlider > div > div > div > div {
+            background-color: var(--accent-primary) !important;
+        }
+        
+        .stCheckbox > label {
             color: var(--text-primary) !important;
             font-size: 1.1rem !important;
         }
         
-        /* File uploader */
-        .css-1cpxqw2 {
-            background: rgba(30, 41, 59, 0.7) !important;
-            border: 2px dashed var(--accent-primary) !important;
-            border-radius: 12px !important;
-            color: var(--text-primary) !important;
-        }
-        
-        /* Better contrast for all text */
-        p, div, span, label {
-            color: var(--text-primary) !important;
-        }
-        
-        .css-10trblm {
-            color: var(--text-secondary) !important;
-        }
-        
-        /* Loading spinner styling */
+        /* Loading and spinner */
         .stSpinner > div {
             border-top-color: var(--accent-primary) !important;
         }
         
-        /* Slider styling */
-        .stSlider > div > div > div > div {
+        /* Progress indicators */
+        .stProgress > div > div > div > div {
             background-color: var(--accent-primary) !important;
+        }
+        
+        /* Enhanced typography */
+        h1, h2, h3, h4, h5, h6 {
+            color: var(--text-primary) !important;
+        }
+        
+        p, div, span, label {
+            color: var(--text-primary) !important;
+        }
+        
+        /* Responsive design */
+        @media (max-width: 768px) {
+            .main-container {
+                padding: 2rem;
+                margin: 1rem;
+            }
+            
+            .response-content {
+                padding: 2rem;
+                font-size: 1.6rem;
+            }
+            
+            .main-title {
+                font-size: 2.5rem;
+            }
         }
     </style>
 """, unsafe_allow_html=True)
 
-# --- Comprehensive Physics Domains Sidebar ---
+# --- Advanced Physics Topics with Enhanced Organization ---
 with st.sidebar:
-    st.markdown("### 🧠 Physics GPT - All Domains")
+    st.markdown("### 🧠 Physics GPT Pro - Complete Universe")
     
-    # Complete physics coverage without categorization
+    # Ultra-comprehensive physics coverage
     all_physics_topics = [
         # Mathematical Physics
-        "Vector Calculus", "Tensor Analysis", "Complex Analysis", "Special Functions", 
-        "Green's Functions", "Group Theory", "Differential Equations", "Fourier Analysis",
-        "Variational Methods", "Perturbation Theory", "Numerical Methods",
+        "Vector Calculus & Tensor Analysis", "Complex Analysis & Contour Integration", 
+        "Special Functions & Orthogonal Polynomials", "Green's Functions & Boundary Problems",
+        "Group Theory & Symmetries", "Differential Geometry & Topology", "Variational Methods",
+        "Fourier & Laplace Transforms", "Integral Equations", "Perturbation Theory",
         
         # Classical Mechanics
-        "Newtonian Mechanics", "Lagrangian Mechanics", "Hamiltonian Mechanics", 
-        "Central Forces", "Rigid Body Dynamics", "Small Oscillations", "Normal Modes",
-        "Chaos Theory", "Nonlinear Dynamics", "Continuum Mechanics", "Fluid Dynamics",
-        "Special Relativity", "General Relativity",
+        "Newtonian Mechanics & Conservation Laws", "Lagrangian Mechanics & Constraints", 
+        "Hamiltonian Mechanics & Phase Space", "Canonical Transformations", "Central Forces",
+        "Rigid Body Dynamics & Euler Angles", "Small Oscillations & Normal Modes", 
+        "Hamilton-Jacobi Theory", "Chaos & Nonlinear Dynamics", "Continuum Mechanics",
+        "Fluid Dynamics & Turbulence", "Special Relativity", "General Relativity",
         
         # Quantum Mechanics
-        "Wave Mechanics", "Matrix Mechanics", "Schrödinger Equation", "Hydrogen Atom",
-        "Angular Momentum", "Spin", "Pauli Matrices", "Perturbation Theory", 
-        "Scattering Theory", "Path Integrals", "Second Quantization", "Many-Body Theory",
-        "Quantum Field Theory", "Quantum Information", "Quantum Computing",
+        "Wave-Particle Duality & de Broglie", "Schrödinger Equation & Wave Functions",
+        "Quantum Harmonic Oscillator", "Hydrogen Atom & Spherical Harmonics", 
+        "Angular Momentum & Spin", "Pauli Matrices & Spinors", "Perturbation Theory",
+        "Time-Dependent Perturbations", "Scattering Theory & Cross Sections", 
+        "Path Integral Formulation", "Second Quantization", "Many-Body Theory",
+        "Quantum Field Theory", "Quantum Information & Computing", "Decoherence Theory",
         
         # Electromagnetic Theory
-        "Electrostatics", "Magnetostatics", "Maxwell Equations", "Electromagnetic Waves",
-        "Wave Propagation", "Waveguides", "Antennas", "Plasma Physics", "MHD Theory",
-        "Superconductivity", "Meissner Effect", "Josephson Junctions", "Dielectrics",
+        "Electrostatics & Multipole Expansion", "Magnetostatics & Vector Potential",
+        "Maxwell Equations & Gauge Theory", "Electromagnetic Waves & Radiation",
+        "Wave Propagation & Dispersion", "Waveguides & Transmission Lines", 
+        "Antenna Theory & Radiation Patterns", "Plasma Physics & MHD", 
+        "Superconductivity & Meissner Effect", "Metamaterials & Photonic Crystals",
+        "Nonlinear Optics", "Quantum Electrodynamics",
         
-        # Thermodynamics & Statistical Mechanics
-        "Laws of Thermodynamics", "Kinetic Theory", "Maxwell-Boltzmann Distribution",
-        "Canonical Ensemble", "Grand Canonical Ensemble", "Fermi-Dirac Statistics",
-        "Bose-Einstein Statistics", "Phase Transitions", "Critical Phenomena", 
-        "Ising Model", "Monte Carlo Methods", "Non-equilibrium Physics",
+        # Statistical Mechanics & Thermodynamics
+        "Laws of Thermodynamics", "Kinetic Theory & Transport", 
+        "Maxwell-Boltzmann Distribution", "Canonical & Grand Canonical Ensembles",
+        "Fermi-Dirac & Bose-Einstein Statistics", "Phase Transitions & Critical Phenomena",
+        "Ising Model & Renormalization", "Monte Carlo Methods", "Non-equilibrium Physics",
+        "Information Theory & Entropy", "Black Body Radiation", "Fluctuation Theorems",
         
         # Solid State Physics
-        "Crystal Structure", "Bravais Lattices", "X-ray Diffraction", "Phonons",
-        "Free Electron Model", "Band Theory", "Semiconductors", "p-n Junctions",
-        "Transistors", "Magnetism", "Superconductivity", "BCS Theory", "Defects",
-        "Phase Diagrams", "Quantum Hall Effect", "Topological Insulators",
+        "Crystal Structure & Symmetries", "Bravais Lattices & Miller Indices",
+        "X-ray Diffraction & Structure Factor", "Phonons & Lattice Dynamics",
+        "Free Electron Model & Fermi Surface", "Band Theory & Electronic Structure",
+        "Semiconductors & p-n Junctions", "Transistors & Electronic Devices",
+        "Magnetism & Magnetic Materials", "Superconductivity & BCS Theory",
+        "Defects & Dislocations", "Phase Diagrams & Phase Transitions",
+        "Quantum Hall Effect", "Topological Insulators", "2D Materials & Graphene",
         
         # Atomic & Molecular Physics
-        "Atomic Structure", "Electronic Configurations", "Spectroscopy", "Selection Rules",
-        "Zeeman Effect", "Stark Effect", "Hyperfine Structure", "Laser Physics",
-        "Stimulated Emission", "Molecular Bonding", "MO Theory", "Vibrational Spectra",
-        "Rotational Spectra", "Photoelectron Spectroscopy", "Quantum Optics",
+        "Atomic Structure & Electronic Configurations", "Hydrogen-like Atoms",
+        "Multi-electron Atoms & Hartree-Fock", "X-ray & Optical Spectroscopy",
+        "Selection Rules & Transitions", "Zeeman & Stark Effects", "Hyperfine Structure",
+        "Laser Physics & Stimulated Emission", "Laser Cooling & Trapping",
+        "Molecular Bonding & MO Theory", "Vibrational & Rotational Spectra",
+        "Photoelectron Spectroscopy", "Quantum Optics & Cavity QED", "AMO Physics",
         
         # Nuclear & Particle Physics
-        "Nuclear Structure", "Shell Model", "Binding Energy", "Radioactive Decay",
-        "Nuclear Reactions", "Fission", "Fusion", "Standard Model", "Quarks",
-        "Leptons", "Gauge Theories", "Symmetries", "Conservation Laws", "Neutrino Physics",
-        "Particle Accelerators", "Detectors", "Cosmology", "Dark Matter", "Dark Energy",
+        "Nuclear Structure & Shell Model", "Binding Energy & Mass Formula",
+        "Radioactive Decay & Nuclear Reactions", "Fission & Fusion Processes",
+        "Nuclear Models & Collective Motion", "Standard Model of Particles",
+        "Quarks & Gluons (QCD)", "Electroweak Theory", "Higgs Mechanism",
+        "Neutrino Physics", "CP Violation", "Symmetries & Conservation Laws",
+        "Particle Accelerators & Detectors", "Cosmic Rays & Astroparticle Physics",
+        "Dark Matter & Dark Energy", "Beyond Standard Model Physics",
         
         # Electronics & Instrumentation
-        "Semiconductor Physics", "Diodes", "Transistors", "Amplifiers", "Oscillators",
-        "Digital Logic", "Boolean Algebra", "Microprocessors", "Embedded Systems",
-        "Signal Processing", "Filters", "Control Systems", "Feedback Theory",
-        "Measurement Techniques", "Error Analysis", "Data Acquisition",
+        "Semiconductor Physics & Devices", "Diodes & Rectifier Circuits",
+        "Bipolar & Field Effect Transistors", "Operational Amplifiers", "Digital Logic",
+        "Boolean Algebra & Logic Gates", "Microprocessors & Computer Architecture",
+        "Signal Processing & Fourier Analysis", "Filters & Amplifiers", "Control Systems",
+        "Feedback Theory & Stability", "Measurement & Error Analysis", "Data Acquisition",
+        "Instrumentation & Sensors", "Power Electronics", "VLSI & Integrated Circuits",
         
         # Optics & Photonics
-        "Geometrical Optics", "Wave Optics", "Interference", "Diffraction", "Polarization",
-        "Fiber Optics", "Holography", "Fourier Optics", "Nonlinear Optics", "Laser Theory",
-        "Laser Applications", "Optical Communication", "Photonic Crystals",
+        "Geometrical Optics & Ray Tracing", "Wave Optics & Interference",
+        "Diffraction & Fraunhofer/Fresnel", "Polarization & Crystal Optics",
+        "Fiber Optics & Waveguides", "Holography & 3D Imaging", "Fourier Optics",
+        "Nonlinear Optics & Harmonic Generation", "Laser Theory & Applications",
+        "Laser Spectroscopy", "Optical Communication", "Photonic Crystals",
+        "Plasmonics & Surface Plasmons", "Metamaterials & Negative Index",
         
         # Condensed Matter Physics
-        "Many-Body Theory", "Strongly Correlated Systems", "Quantum Phase Transitions",
-        "Topological Phases", "Quantum Materials", "High-Temperature Superconductivity",
-        "Quantum Spin Liquids", "Graphene", "2D Materials", "Metamaterials",
+        "Many-Body Theory & Green's Functions", "Strongly Correlated Systems",
+        "Quantum Phase Transitions", "Topological Phases of Matter", "Quantum Materials",
+        "High-Temperature Superconductivity", "Quantum Spin Liquids", "Frustrated Magnetism",
+        "Density Functional Theory", "Electronic Correlations", "Quantum Monte Carlo",
+        "Transport Properties", "Optical Properties", "Surface & Interface Physics",
         
         # Biophysics & Medical Physics
-        "Biomolecular Structure", "Protein Folding", "DNA Physics", "Membrane Physics",
-        "Ion Channels", "Neural Networks", "Medical Imaging", "MRI Physics", "CT Imaging",
-        "Ultrasound", "Radiation Therapy", "Dosimetry", "Radiobiology",
+        "Biomolecular Structure & Function", "Protein Folding & Dynamics",
+        "DNA Physics & Mechanics", "Membrane Physics & Ion Channels", 
+        "Neural Networks & Brain Dynamics", "Medical Imaging Physics", "MRI Physics",
+        "CT & PET Imaging", "Ultrasound Physics", "X-ray Physics", "Nuclear Medicine",
+        "Radiation Therapy Physics", "Dosimetry & Radiation Protection", "Radiobiology",
+        "Biophysical Techniques", "Single Molecule Physics",
         
         # Astrophysics & Cosmology
-        "Stellar Physics", "Stellar Evolution", "White Dwarfs", "Neutron Stars",
-        "Black Holes", "Galactic Dynamics", "Dark Matter", "Dark Energy", "Big Bang",
-        "Cosmic Microwave Background", "Gravitational Waves", "Exoplanets",
+        "Stellar Physics & Structure", "Stellar Evolution & Nucleosynthesis",
+        "White Dwarfs & Neutron Stars", "Black Holes & Event Horizons",
+        "Galactic Structure & Dynamics", "Interstellar Medium", "Cosmic Rays",
+        "Big Bang Cosmology", "Cosmic Microwave Background", "Dark Matter & Dark Energy",
+        "Gravitational Waves", "Exoplanets & Habitability", "Solar Physics",
+        "High Energy Astrophysics", "Gamma Ray Bursts", "Active Galactic Nuclei",
         
         # Plasma Physics
-        "Plasma Fundamentals", "Debye Shielding", "Plasma Oscillations", "MHD Waves",
-        "Fusion Physics", "Tokamaks", "Stellar Plasma", "Space Plasma", "Laboratory Plasma",
+        "Plasma Fundamentals & Debye Length", "Plasma Oscillations & Waves",
+        "Magnetohydrodynamics (MHD)", "Plasma Instabilities", "Fusion Physics",
+        "Tokamaks & Magnetic Confinement", "Inertial Confinement Fusion",
+        "Space Plasma & Solar Wind", "Astrophysical Plasma", "Laboratory Plasma",
+        "Plasma Processing & Applications", "Plasma Diagnostics",
         
         # Computational Physics
-        "Numerical Integration", "Root Finding", "Linear Algebra", "Monte Carlo Methods",
-        "Molecular Dynamics", "Density Functional Theory", "Finite Element Methods",
-        "High Performance Computing", "Machine Learning in Physics",
+        "Numerical Methods & Algorithms", "Monte Carlo Simulations", "Molecular Dynamics",
+        "Finite Difference & Finite Element", "Spectral Methods", "Optimization Algorithms",
+        "Machine Learning in Physics", "Neural Networks", "Quantum Computing Algorithms",
+        "High Performance Computing", "Parallel Programming", "Scientific Visualization",
+        "Computational Fluid Dynamics", "Electronic Structure Calculations",
+        
+        # Applied Physics & Technology
+        "Materials Science & Engineering", "Nanotechnology & Nanostructures",
+        "Renewable Energy Physics", "Solar Cells & Photovoltaics", "Energy Storage",
+        "Superconducting Technologies", "Quantum Technologies", "Spintronics",
+        "Magnetoelectronics", "Thermoelectrics", "Photonics Technologies",
+        "Sensors & Actuators", "MEMS & NEMS", "Biomedical Devices",
         
         # Experimental Physics
-        "Vacuum Technology", "Cryogenics", "High Magnetic Fields", "Pressure Techniques",
-        "Spectroscopic Methods", "Microscopy", "Neutron Scattering", "Synchrotron Radiation",
-        
-        # Applied Physics
-        "Materials Science", "Nanotechnology", "Renewable Energy", "Solar Cells",
-        "Energy Storage", "Quantum Technologies", "Spintronics", "Plasmonics"
+        "Vacuum Technology", "Cryogenics & Low Temperature", "High Magnetic Fields",
+        "High Pressure Techniques", "Precision Measurements", "Laser Spectroscopy",
+        "Neutron Scattering", "Synchrotron Radiation", "Electron Microscopy",
+        "Scanning Probe Microscopy", "Mass Spectrometry", "Time-Resolved Spectroscopy"
     ]
     
-    # Display all topics in a compact grid
+    # Enhanced topic display
     st.markdown('<div class="comprehensive-topics">', unsafe_allow_html=True)
-    st.markdown(f"**{len(all_physics_topics)} Physics Topics Available**")
-    st.markdown("*Ask any question from any physics domain*")
+    st.markdown(f"**🌟 {len(all_physics_topics)} Advanced Physics Topics**")
+    st.markdown("*Complete theoretical mastery across all domains*")
     st.markdown('</div>', unsafe_allow_html=True)
     
-    # Quick topic buttons in columns
+    # Quick access topics
+    st.markdown("#### 🚀 Quick Access Topics")
     cols = st.columns(2)
-    for i, topic in enumerate(all_physics_topics[:20]):  # Show first 20 for quick access
+    for i, topic in enumerate(all_physics_topics[:30]):  # Show first 30
         col_idx = i % 2
         with cols[col_idx]:
             if st.button(topic, key=f"quick_{topic}"):
                 st.session_state.quick_topic = topic
     
-    if st.button("🔍 Show All Topics", key="show_all"):
+    # Show all topics toggle
+    if st.button("🔍 Explore All Physics Topics", key="show_all_topics"):
         st.session_state.show_all_topics = True
     
-    # If show all is clicked, display remaining topics
     if hasattr(st.session_state, 'show_all_topics') and st.session_state.show_all_topics:
-        st.markdown("### Complete Topic List")
-        for topic in all_physics_topics[20:]:
-            if st.button(topic, key=f"all_{topic}"):
-                st.session_state.selected_topic = topic
+        st.markdown("#### 🌌 Complete Physics Universe")
+        with st.expander("All Advanced Topics", expanded=True):
+            for i, topic in enumerate(all_physics_topics[30:]):
+                if st.button(topic, key=f"all_{topic}_{i}"):
+                    st.session_state.selected_topic = topic
 
-    # Exam Resources
-    st.markdown("### 📚 Exam Resources")
-    exam_info = {
-        "IIT-JAM": "Mathematical Methods, Mechanics, Waves, EM Theory, Thermodynamics, Modern Physics",
-        "CSIR-NET": "Mathematical Physics, Classical Mechanics, QM, EM Theory, Statistical Physics",
-        "GATE": "Engineering Mathematics, Classical Mechanics, EM Theory, QM, Thermodynamics",
-        "JEST": "Advanced Physics, Research Aptitude, Theoretical Physics",
-        "TIFR": "Comprehensive Physics, Research-oriented Problems"
+    # Enhanced exam resources
+    st.markdown("### 📚 Elite Exam Preparation")
+    
+    advanced_exam_info = {
+        "🎯 IIT-JAM Physics": {
+            "focus": "Mathematical Methods, Classical Mechanics, EM Theory, QM, Thermodynamics, Modern Physics",
+            "weightage": "High mathematical rigor, problem-solving emphasis",
+            "strategy": "Conceptual clarity with mathematical precision"
+        },
+        "🔬 CSIR-NET Physical Sciences": {
+            "focus": "Comprehensive physics with research aptitude",
+            "weightage": "Theory-heavy with current research integration",
+            "strategy": "Deep theoretical understanding with applications"
+        },
+        "⚙️ GATE Physics": {
+            "focus": "Engineering physics with practical applications",
+            "weightage": "Mathematical methods and computational physics",
+            "strategy": "Problem-solving with engineering perspective"
+        },
+        "🚀 JEST (Advanced)": {
+            "focus": "Research-oriented theoretical physics",
+            "weightage": "Advanced quantum mechanics and field theory",
+            "strategy": "Graduate-level theoretical mastery"
+        },
+        "🔬 TIFR GS Physics": {
+            "focus": "Cutting-edge theoretical and experimental physics",
+            "weightage": "Research frontiers and advanced concepts",
+            "strategy": "Research-level theoretical depth"
+        }
     }
     
-    for exam, topics in exam_info.items():
+    for exam, details in advanced_exam_info.items():
         with st.expander(exam):
-            st.write(topics)
+            st.write(f"**Focus Areas:** {details['focus']}")
+            st.write(f"**Weightage:** {details['weightage']}")
+            st.write(f"**Strategy:** {details['strategy']}")
 
-    # Mathematical Detail Settings
-    st.markdown("### 🧮 Mathematical Settings")
+    # Advanced theoretical settings
+    st.markdown("### 🧮 Theoretical Analysis Settings")
     
-    math_detail_level = st.slider(
-        "Mathematical Detail Level:",
+    theoretical_depth = st.slider(
+        "Theoretical Depth Level:",
         min_value=1,
         max_value=5,
         value=4,
-        help="1: Basic, 3: Standard, 5: Maximum Detail"
+        help="1: Basic, 3: Advanced, 5: Research Level"
     )
     
-    derivation_style = st.selectbox(
-        "Derivation Style:",
-        ["Complete Step-by-Step", "Detailed with Explanations", "Multiple Methods", "Research Level"]
+    mathematical_rigor = st.slider(
+        "Mathematical Rigor:",
+        min_value=1,
+        max_value=5,
+        value=4,
+        help="1: Minimal, 3: Standard, 5: Complete Proofs"
+    )
+    
+    theoretical_scope = st.multiselect(
+        "Theoretical Scope:",
+        ["Classical Physics", "Quantum Mechanics", "Relativity", "Field Theory", 
+         "Statistical Mechanics", "Condensed Matter", "Particle Physics", "Cosmology"],
+        default=["Classical Physics", "Quantum Mechanics"]
     )
 
-# --- Main Content ---
+# --- Main Application Interface ---
 st.markdown('<div class="main-container">', unsafe_allow_html=True)
 
-# Enhanced Title Section with Physics GPT Branding
-st.markdown('<div class="main-title">🧠 Physics GPT</div>', unsafe_allow_html=True)
+# Revolutionary header design
+st.markdown('<div class="main-title">🧠 Physics GPT Pro</div>', unsafe_allow_html=True)
 st.markdown('<div class="creator-badge"><span>by Sreekesh M</span></div>', unsafe_allow_html=True)
-st.markdown('<div class="subtitle">Advanced AI Physics Tutor with Complete Mathematical Derivations</div>', unsafe_allow_html=True)
+st.markdown('<div class="subtitle">Revolutionary AI Physics Tutor with Ultra-Advanced Theoretical Analysis</div>', unsafe_allow_html=True)
 
-# Physics Domains Overview
-st.markdown("### 🌟 Complete Physics Coverage with Mathematical Rigor")
+# Enhanced physics domains visualization
+st.markdown("### 🌟 Complete Physics Mastery with Revolutionary AI")
 physics_domains = [
-    "Mathematical Physics", "Classical Mechanics", "Quantum Mechanics", "Electromagnetic Theory",
-    "Statistical Mechanics", "Solid State Physics", "Atomic Physics", "Nuclear Physics",
-    "Particle Physics", "Electronics", "Optics", "Condensed Matter", "Biophysics",
-    "Astrophysics", "Plasma Physics", "Computational Physics", "Applied Physics"
+    "🧮 Mathematical Physics", "⚛️ Classical Mechanics", "🌊 Quantum Mechanics", "⚡ Electromagnetic Theory",
+    "🔥 Statistical Mechanics", "💎 Solid State Physics", "🔬 Atomic Physics", "☢️ Nuclear Physics",
+    "🚀 Particle Physics", "💻 Electronics", "🌈 Optics & Photonics", "🧊 Condensed Matter",
+    "🧬 Biophysics", "🌌 Astrophysics", "⚡ Plasma Physics", "🖥️ Computational Physics", "🔧 Applied Physics"
 ]
 
 st.markdown('<div class="physics-grid">', unsafe_allow_html=True)
@@ -810,101 +1151,135 @@ for domain in physics_domains:
     st.markdown(f'<div class="physics-domain">{domain}</div>', unsafe_allow_html=True)
 st.markdown('</div>', unsafe_allow_html=True)
 
-# Enhanced Stats
+# Advanced metrics dashboard
 col1, col2, col3, col4 = st.columns(4)
 with col1:
-    st.metric("Physics Topics", f"{len(all_physics_topics)}", "Complete Coverage")
+    st.metric("🎯 Physics Topics", f"{len(all_physics_topics)}", "Complete Universe")
 with col2:
-    st.metric("Domains Covered", len(physics_domains), "All Areas")
+    st.metric("🔬 Domains Mastered", len(physics_domains), "All Fields")
 with col3:
-    st.metric("Mathematical Rigor", "Maximum", "Step-by-Step")
+    st.metric("🧮 Theoretical Depth", "Research Level", "Maximum Rigor")
 with col4:
-    st.metric("Derivation Detail", "Complete", "Every Step")
+    st.metric("🚀 AI Capability", "Revolutionary", "Next-Gen")
 
-# Universal Input Form
-with st.form(key="universal_physics_form", clear_on_submit=False):
-    # Main question input
+# Ultra-advanced input form
+with st.form(key="physics_gpt_pro_form", clear_on_submit=False):
+    # Main theoretical question input
     default_question = ""
     if hasattr(st.session_state, 'selected_topic'):
-        default_question = f"Provide complete mathematical derivation and comprehensive explanation of {st.session_state.selected_topic}"
+        default_question = f"Provide comprehensive theoretical analysis with complete mathematical derivations for {st.session_state.selected_topic}, including historical development, current research, and advanced applications"
     elif hasattr(st.session_state, 'quick_topic'):
-        default_question = f"Derive all key equations and provide detailed mathematical analysis of {st.session_state.quick_topic}"
+        default_question = f"Deliver ultra-detailed theoretical treatment of {st.session_state.quick_topic} with complete mathematical framework, multiple theoretical perspectives, and cutting-edge research insights"
     
     query = st.text_area(
-        "🎯 Ask Physics GPT for detailed mathematical derivations:",
+        "🎯 Ask Physics GPT Pro for Revolutionary Theoretical Analysis:",
         value=default_question,
-        placeholder="e.g., Derive the complete time-dependent Schrödinger equation from first principles with every mathematical step, or Provide complete derivation of Maxwell's equations with all intermediate steps",
-        height=130,
-        key="universal_question"
+        placeholder="e.g., Provide complete theoretical derivation of quantum field theory from first principles with historical development and current research frontiers, or Deliver comprehensive theoretical analysis of general relativity with mathematical rigor and modern applications",
+        height=140,
+        key="physics_gpt_pro_question"
     )
     
-    # Configuration options
+    # Advanced configuration matrix
     col1, col2, col3 = st.columns(3)
     
     with col1:
         response_style = st.selectbox(
-            "📋 Response Style:",
-            ["Complete Mathematical Derivation", "Step-by-Step with Explanations", "Multiple Derivation Methods", 
-             "Research-Level Analysis", "Exam-Focused with Derivations", "Comprehensive with Examples"]
+            "📋 Theoretical Response Style:",
+            ["Ultra-Comprehensive Theoretical Analysis", "Complete Mathematical Derivation with Theory", 
+             "Multi-Perspective Theoretical Treatment", "Research-Level Theoretical Investigation",
+             "Historical-to-Modern Theoretical Development", "Cross-Domain Theoretical Synthesis"]
         )
     
     with col2:
         academic_level = st.selectbox(
-            "🎓 Academic Level:",
-            ["Advanced Undergraduate", "Graduate", "Research Level", "Professional", "Auto-Detect"]
+            "🎓 Theoretical Sophistication:",
+            ["Advanced Graduate", "Research Professional", "Theoretical Physicist", 
+             "Post-Doctoral", "Faculty Level", "Auto-Adaptive"]
         )
     
     with col3:
-        mathematical_focus = st.multiselect(
-            "🧮 Mathematical Focus:",
-            ["Complete Derivations", "Alternative Methods", "Numerical Examples", "Approximation Methods", 
-             "Computational Approaches", "Advanced Techniques", "Research Applications"]
+        theoretical_focus = st.multiselect(
+            "🧠 Theoretical Emphasis:",
+            ["Complete Mathematical Rigor", "Historical Development", "Modern Research Frontiers", 
+             "Cross-Domain Connections", "Experimental Validation", "Technological Applications",
+             "Pedagogical Excellence", "Research Methodology"]
         )
     
-    # Advanced Mathematical Options
-    with st.expander("🔬 Advanced Mathematical Options"):
+    # Ultra-advanced theoretical options
+    with st.expander("🔬 Advanced Theoretical Configuration", expanded=True):
+        col1, col2, col3 = st.columns(3)
+        
+        with col1:
+            st.markdown("**📐 Mathematical Treatment**")
+            complete_derivations = st.checkbox("Complete step-by-step derivations", value=True)
+            alternative_methods = st.checkbox("Multiple derivation approaches", value=True)
+            mathematical_proofs = st.checkbox("Include mathematical proofs", value=True)
+            
+        with col2:
+            st.markdown("**🔬 Theoretical Scope**")
+            historical_context = st.checkbox("Historical theoretical development", value=True)
+            current_research = st.checkbox("Current research frontiers", value=True)
+            future_directions = st.checkbox("Future theoretical directions", value=True)
+            
+        with col3:
+            st.markdown("**🎯 Educational Excellence**")
+            pedagogical_structure = st.checkbox("Pedagogical optimization", value=True)
+            cross_connections = st.checkbox("Cross-domain theoretical links", value=True)
+            practical_applications = st.checkbox("Theoretical-to-practical bridges", value=True)
+    
+    # Advanced content customization
+    with st.expander("⚙️ Ultra-Advanced Customization"):
         col1, col2 = st.columns(2)
         
         with col1:
-            detail_level = st.slider(
-                "Derivation Detail Level:",
+            content_depth = st.slider(
+                "Content Depth Level:",
                 min_value=1,
                 max_value=5,
-                value=4,
-                help="1: Basic steps, 5: Every algebraic manipulation"
+                value=5,
+                help="1: Standard, 3: Comprehensive, 5: Research Paper Level"
             )
             
-            include_proofs = st.checkbox("Include mathematical proofs", value=True)
-            show_all_steps = st.checkbox("Show every algebraic step", value=True)
+            mathematical_detail = st.slider(
+                "Mathematical Detail Level:",
+                min_value=1,
+                max_value=5,
+                value=5,
+                help="1: Key equations, 5: Every mathematical step"
+            )
             
         with col2:
             response_length = st.selectbox(
                 "Response Comprehensiveness:",
-                ["Extended", "Comprehensive", "Maximum Detail", "Research Paper Length"]
+                ["Extended Analysis", "Comprehensive Treatment", "Ultra-Detailed", 
+                 "Research Monograph Level", "Complete Theoretical Survey"]
             )
             
-            include_numerical = st.checkbox("Include numerical calculations", value=True)
-            multiple_methods = st.checkbox("Show alternative derivation methods", value=True)
+            theoretical_perspective = st.selectbox(
+                "Theoretical Perspective:",
+                ["Multi-Framework Analysis", "Unified Theoretical Treatment", 
+                 "Comparative Theoretical Study", "Evolutionary Theoretical View"]
+            )
     
-    # File upload and references
+    # Research materials integration
     col1, col2 = st.columns(2)
     
     with col1:
         uploaded_file = st.file_uploader(
-            "📄 Upload Reference Material (Optional):",
+            "📄 Advanced Reference Materials:",
             type=["pdf", "docx"],
-            help="Upload physics textbooks, papers, or lecture notes"
+            help="Upload research papers, advanced textbooks, or theoretical monographs"
         )
     
     with col2:
         url_input = st.text_input(
-            "🌐 Reference URL (Optional):",
+            "🌐 Research URLs & ArXiv Papers:",
             placeholder="https://arxiv.org/abs/...",
-            help="Link to research papers, lectures, or mathematical resources"
+            help="Link to cutting-edge research papers and theoretical resources"
         )
     
-    # Submit button
-    submit_button = st.form_submit_button("🚀 Generate Complete Mathematical Analysis", use_container_width=True)
+    # Revolutionary submit button
+    submit_button = st.form_submit_button("🚀 Generate Revolutionary Theoretical Analysis", use_container_width=True)
 
 # --- Text Extraction Functions ---
 def extract_text_from_pdf(file):
@@ -929,139 +1304,182 @@ def extract_text_from_url(url):
     except Exception as e:
         return f"Error reading URL: {e}"
 
-# --- Enhanced Answer Generation with Maximum Mathematical Detail ---
+# --- Revolutionary Answer Generation ---
 if submit_button and query:
-    with st.spinner(f"🧠 Physics GPT is performing comprehensive mathematical analysis with {response_style.lower()}..."):
-        # Context extraction
-        context = ""
-        if uploaded_file:
-            if uploaded_file.name.endswith(".pdf"):
-                context = extract_text_from_pdf(uploaded_file)
-            elif uploaded_file.name.endswith(".docx"):
-                context = extract_text_from_docx(uploaded_file)
-        elif url_input:
-            context = extract_text_from_url(url_input)
+    # Enhanced loading animation
+    progress_bar = st.progress(0)
+    status_text = st.empty()
+    
+    status_text.text("🧠 Physics GPT Pro initializing ultra-advanced theoretical analysis...")
+    progress_bar.progress(10)
+    time.sleep(0.5)
+    
+    status_text.text("🔬 Accessing comprehensive physics knowledge base...")
+    progress_bar.progress(30)
+    time.sleep(0.5)
+    
+    status_text.text("🧮 Preparing complete mathematical framework...")
+    progress_bar.progress(50)
+    time.sleep(0.5)
+    
+    status_text.text("🌟 Generating revolutionary theoretical content...")
+    progress_bar.progress(80)
+    
+    # Context extraction with enhanced processing
+    context = ""
+    if uploaded_file:
+        status_text.text("📄 Processing advanced reference materials...")
+        if uploaded_file.name.endswith(".pdf"):
+            context = extract_text_from_pdf(uploaded_file)
+        elif uploaded_file.name.endswith(".docx"):
+            context = extract_text_from_docx(uploaded_file)
+    elif url_input:
+        status_text.text("🌐 Integrating cutting-edge research content...")
+        context = extract_text_from_url(url_input)
 
-        context = context.strip()
-        if len(context) > 6000:
-            context = context[:6000] + "\n...[Content truncated for processing]"
+    context = context.strip()
+    if len(context) > 8000:
+        context = context[:8000] + "\n...[Advanced content truncated for optimal processing]"
 
-        # Enhanced mathematical prompt construction
-        mathematical_prompt = f"""
-MATHEMATICAL ANALYSIS REQUIREMENTS:
+    # Ultra-advanced theoretical prompt construction
+    revolutionary_prompt = f"""
+PHYSICS GPT PRO - REVOLUTIONARY THEORETICAL ANALYSIS REQUEST
 
-RESPONSE STYLE: {response_style}
-ACADEMIC LEVEL: {academic_level}
-MATHEMATICAL FOCUS: {', '.join(mathematical_focus) if mathematical_focus else 'Complete mathematical treatment'}
-DETAIL LEVEL: {detail_level}/5 (Show {"every single algebraic manipulation" if detail_level >= 4 else "all major steps"})
-RESPONSE LENGTH: {response_length}
+THEORETICAL RESPONSE CONFIGURATION:
+- RESPONSE STYLE: {response_style}
+- ACADEMIC SOPHISTICATION: {academic_level}
+- THEORETICAL FOCUS: {', '.join(theoretical_focus) if theoretical_focus else 'Complete theoretical mastery'}
+- CONTENT DEPTH: {content_depth}/5 ({"Research monograph level" if content_depth >= 4 else "Advanced treatment"})
+- MATHEMATICAL DETAIL: {mathematical_detail}/5 ({"Every step with complete rigor" if mathematical_detail >= 4 else "Key mathematical developments"})
+- RESPONSE LENGTH: {response_length}
+- THEORETICAL PERSPECTIVE: {theoretical_perspective}
 
-MATHEMATICAL REQUIREMENTS:
-- SHOW EVERY STEP: {"Yes - every algebraic manipulation" if show_all_steps else "Major steps only"}
-- INCLUDE PROOFS: {"Yes - complete mathematical proofs" if include_proofs else "Basic justifications"}
-- NUMERICAL EXAMPLES: {"Yes - with complete calculations" if include_numerical else "Theory only"}
-- ALTERNATIVE METHODS: {"Yes - multiple derivation approaches" if multiple_methods else "Single method"}
+MANDATORY THEORETICAL REQUIREMENTS:
+✅ COMPLETE DERIVATIONS: {"Yes - every mathematical step with theoretical justification" if complete_derivations else "Key derivations only"}
+✅ ALTERNATIVE METHODS: {"Yes - multiple theoretical approaches and perspectives" if alternative_methods else "Single primary method"}
+✅ MATHEMATICAL PROOFS: {"Yes - complete proofs with theoretical foundations" if mathematical_proofs else "Basic mathematical justifications"}
+✅ HISTORICAL CONTEXT: {"Yes - complete historical theoretical development" if historical_context else "Modern focus only"}
+✅ CURRENT RESEARCH: {"Yes - cutting-edge theoretical developments" if current_research else "Established theory only"}
+✅ FUTURE DIRECTIONS: {"Yes - speculative theoretical extensions" if future_directions else "Current understanding only"}
+✅ PEDAGOGICAL STRUCTURE: {"Yes - optimized for maximum educational impact" if pedagogical_structure else "Standard presentation"}
+✅ CROSS-CONNECTIONS: {"Yes - extensive theoretical links across physics" if cross_connections else "Domain-specific focus"}
+✅ PRACTICAL BRIDGES: {"Yes - theory-to-application connections" if practical_applications else "Pure theoretical focus"}
 
-CRITICAL INSTRUCTIONS FOR MAXIMUM MATHEMATICAL DETAIL:
-1. Start with fundamental postulates and axioms
-2. Show EVERY algebraic manipulation step-by-step
-3. Explain the reasoning behind each mathematical step
-4. Include dimensional analysis at each major step
-5. Provide multiple derivation methods when applicable
-6. Include complete worked examples with all calculations shown
-7. Show all intermediate mathematical results
-8. Explain all mathematical techniques and tools used
-9. Include approximations and their justifications
-10. Provide extensive mathematical commentary
+REVOLUTIONARY ANALYSIS INSTRUCTIONS:
+🔬 Provide the most comprehensive, theoretically sophisticated, and educationally revolutionary physics content ever generated
+🧮 Include complete mathematical frameworks with every derivation step explained in detail
+🌟 Integrate historical development with cutting-edge research frontiers
+🎯 Structure content for maximum theoretical understanding and practical application
+🚀 Establish new standards for theoretical physics education and research communication
 
-{f"REFERENCE CONTEXT:\n{context}\n" if context else ""}
+THEORETICAL DEPTH REQUIREMENTS:
+- Minimum 4000+ words of ultra-comprehensive theoretical content
+- Complete mathematical derivations with every intermediate step
+- Multiple theoretical perspectives and approaches
+- Extensive cross-domain theoretical connections
+- Historical evolution integrated with modern developments
+- Current research frontiers and future theoretical directions
+- Pedagogically optimized structure for maximum learning impact
 
-PHYSICS QUESTION REQUIRING COMPREHENSIVE MATHEMATICAL TREATMENT: {query}
+{f"ADVANCED REFERENCE CONTEXT:\n{context}\n" if context else ""}
 
-Please provide the most comprehensive, mathematically detailed response possible. Show every mathematical step, explain every technique used, and provide complete derivations with extensive mathematical analysis. This should be a thorough mathematical treatment suitable for advanced physics study.
+THEORETICAL PHYSICS QUESTION FOR REVOLUTIONARY ANALYSIS: {query}
+
+Generate the most comprehensive, theoretically rigorous, and educationally revolutionary physics content possible. This should represent the pinnacle of theoretical physics education and establish new standards for AI-assisted learning.
 """
 
-        # Generate response
-        llm = get_llm()
-        prompt = ChatPromptTemplate.from_messages([
-            ("system", SYSTEM_PROMPT),
-            ("human", "{question}")
-        ])
-        chain = LLMChain(llm=llm, prompt=prompt)
-        response = chain.run({"question": mathematical_prompt})
+    status_text.text("🚀 Finalizing revolutionary theoretical content...")
+    progress_bar.progress(100)
+    
+    # Generate revolutionary response
+    llm = get_llm()
+    prompt = ChatPromptTemplate.from_messages([
+        ("system", SYSTEM_PROMPT),
+        ("human", "{question}")
+    ])
+    chain = LLMChain(llm=llm, prompt=prompt)
+    response = chain.run({"question": revolutionary_prompt})
 
-        # Enhanced Response UI with Mathematical Focus
-        st.markdown('<div class="response-header">🧠 Physics GPT - Complete Mathematical Analysis</div>', unsafe_allow_html=True)
-        
-        st.markdown('<div class="response-container">', unsafe_allow_html=True)
-        
-        # Response metadata with mathematical details
-        st.markdown('<div class="response-meta">', unsafe_allow_html=True)
-        col1, col2, col3, col4 = st.columns(4)
-        with col1:
-            st.markdown(f'<div class="response-badge style">Style: {response_style}</div>', unsafe_allow_html=True)
-        with col2:
-            st.markdown(f'<div class="response-badge level">Level: {academic_level}</div>', unsafe_allow_html=True)
-        with col3:
-            st.markdown(f'<div class="response-badge enhanced">Detail: Level {detail_level}/5</div>', unsafe_allow_html=True)
-        with col4:
-            if show_all_steps:
-                st.markdown(f'<div class="response-badge">Complete Steps</div>', unsafe_allow_html=True)
-        st.markdown('</div>', unsafe_allow_html=True)
-        
-        # Main response content with enhanced mathematical formatting
-        st.markdown('<div class="response-content">{}</div>'.format(response), unsafe_allow_html=True)
-        
-        # Physics GPT signature
-        st.markdown('<div class="response-footer">', unsafe_allow_html=True)
-        st.markdown('<div class="physics-gpt-signature">Complete Mathematical Analysis by <strong>Physics GPT</strong> - Advanced AI Physics Tutor by <strong>Sreekesh M</strong></div>', unsafe_allow_html=True)
-        st.markdown('</div>', unsafe_allow_html=True)
-        
-        st.markdown('</div>', unsafe_allow_html=True)
-        
-        # Enhanced Mathematical Action Buttons
-        st.markdown('<div class="action-buttons">', unsafe_allow_html=True)
-        st.markdown("### 🧮 Further Mathematical Exploration")
-        col1, col2, col3, col4 = st.columns(4)
-        
-        with col1:
-            if st.button("🔍 More Detailed Steps", key="more_steps"):
-                st.info("Ask Physics GPT to show even more detailed mathematical steps!")
-        
-        with col2:
-            if st.button("🧮 Alternative Derivations", key="alt_methods"):
-                st.info("Request alternative mathematical approaches and derivation methods!")
-        
-        with col3:
-            if st.button("🔬 Numerical Applications", key="numerical"):
-                st.info("Ask for numerical examples with complete computational steps!")
-        
-        with col4:
-            if st.button("📚 Advanced Extensions", key="advanced"):
-                st.info("Inquire about advanced mathematical treatments and research applications!")
-        
-        st.markdown('</div>', unsafe_allow_html=True)
+    # Clear progress indicators
+    progress_bar.empty()
+    status_text.empty()
+
+    # Revolutionary Response Display
+    st.markdown('<div class="response-header">🧠 Physics GPT Pro - Revolutionary Theoretical Analysis</div>', unsafe_allow_html=True)
+    
+    st.markdown('<div class="response-container">', unsafe_allow_html=True)
+    
+    # Advanced response metadata
+    st.markdown('<div class="response-meta">', unsafe_allow_html=True)
+    col1, col2, col3, col4, col5 = st.columns(5)
+    with col1:
+        st.markdown(f'<div class="response-badge style">Style: {response_style.split()[0]}</div>', unsafe_allow_html=True)
+    with col2:
+        st.markdown(f'<div class="response-badge level">Level: {academic_level.split()[0]}</div>', unsafe_allow_html=True)
+    with col3:
+        st.markdown(f'<div class="response-badge detail">Depth: {content_depth}/5</div>', unsafe_allow_html=True)
+    with col4:
+        st.markdown(f'<div class="response-badge enhanced">Math: {mathematical_detail}/5</div>', unsafe_allow_html=True)
+    with col5:
+        st.markdown(f'<div class="response-badge">Revolutionary</div>', unsafe_allow_html=True)
+    st.markdown('</div>', unsafe_allow_html=True)
+    
+    # Ultra-enhanced theoretical content display
+    st.markdown('<div class="response-content">{}</div>'.format(response), unsafe_allow_html=True)
+    
+    # Revolutionary signature
+    st.markdown('<div class="response-footer">', unsafe_allow_html=True)
+    st.markdown('<div class="physics-gpt-signature">Revolutionary Theoretical Analysis by <strong>Physics GPT Pro</strong><br>Next-Generation AI Physics Tutor by <strong>Sreekesh M</strong><br><em>Establishing new standards for theoretical physics education</em></div>', unsafe_allow_html=True)
+    st.markdown('</div>', unsafe_allow_html=True)
+    
+    st.markdown('</div>', unsafe_allow_html=True)
+    
+    # Revolutionary action matrix
+    st.markdown('<div class="action-buttons">', unsafe_allow_html=True)
+    st.markdown("### 🌟 Revolutionary Theoretical Exploration")
+    col1, col2, col3, col4 = st.columns(4)
+    
+    with col1:
+        if st.button("🔬 Ultra-Deep Analysis", key="ultra_deep"):
+            st.success("Ask Physics GPT Pro for even deeper theoretical investigation!")
+    
+    with col2:
+        if st.button("🧮 Advanced Mathematics", key="advanced_math"):
+            st.success("Request complete mathematical proofs and advanced techniques!")
+    
+    with col3:
+        if st.button("🚀 Research Frontiers", key="research_frontiers"):
+            st.success("Explore cutting-edge theoretical developments and future directions!")
+    
+    with col4:
+        if st.button("🌌 Cross-Domain Synthesis", key="cross_domain"):
+            st.success("Investigate theoretical connections across all physics domains!")
+    
+    st.markdown('</div>', unsafe_allow_html=True)
 
 st.markdown('</div>', unsafe_allow_html=True)
 
-# --- Enhanced Footer with Mathematical Focus ---
+# --- Revolutionary Footer ---
 st.markdown("---")
 st.markdown(f"""
-<div style="text-align: center; color: var(--text-secondary); padding: 2rem;">
-    <div style="font-size: 1.6rem; font-weight: 700; margin-bottom: 0.5rem;">
-        🧠 <strong style="background: var(--accent-gradient); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">Physics GPT</strong>
+<div style="text-align: center; color: var(--text-secondary); padding: 3rem;">
+    <div style="font-size: 2rem; font-weight: 900; margin-bottom: 1rem; font-family: 'Playfair Display', serif;">
+        🧠 <strong style="background: var(--accent-gradient); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">Physics GPT Pro</strong>
     </div>
-    <div style="font-size: 1.2rem; margin-bottom: 1rem;">
+    <div style="font-size: 1.4rem; margin-bottom: 1.5rem; font-weight: 600;">
         <em>by <strong>Sreekesh M</strong></em>
     </div>
-    <div style="font-size: 1rem; margin-bottom: 0.5rem;">
-        <em>Advanced AI Physics Tutor with Complete Mathematical Derivations</em>
+    <div style="font-size: 1.2rem; margin-bottom: 1rem; line-height: 1.6;">
+        <em>Revolutionary AI Physics Tutor with Ultra-Advanced Theoretical Mastery</em>
     </div>
-    <div style="font-size: 0.95rem; margin-bottom: 0.5rem;">
-        📐 <strong>{len(all_physics_topics)} Topics</strong> • 🧮 <strong>Complete Step-by-Step Derivations</strong> • 🔬 <strong>All Physics Domains</strong>
+    <div style="font-size: 1.1rem; margin-bottom: 1rem; line-height: 1.6;">
+        🌟 <strong>{len(all_physics_topics)} Advanced Topics</strong> • 🧮 <strong>Complete Mathematical Rigor</strong> • 🔬 <strong>Research-Level Analysis</strong>
     </div>
-    <div style="font-size: 0.9rem;">
-        🌟 From Basic Principles to Advanced Research • Every Mathematical Step Explained
+    <div style="font-size: 1rem; margin-bottom: 1rem; line-height: 1.6;">
+        🚀 <strong>Revolutionary Theoretical Framework</strong> • 🎯 <strong>Next-Gen Educational Excellence</strong> • 🌌 <strong>Complete Physics Mastery</strong>
+    </div>
+    <div style="font-size: 0.95rem; line-height: 1.5; opacity: 0.8;">
+        🌟 Establishing New Standards for Theoretical Physics Education and AI-Assisted Learning
     </div>
 </div>
 """, unsafe_allow_html=True)
