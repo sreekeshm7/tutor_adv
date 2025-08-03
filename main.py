@@ -905,7 +905,7 @@ st.markdown("""
     </style>
 """, unsafe_allow_html=True)
 
-# --- Advanced Physics Topics with Enhanced Organization ---
+# --- Fixed Advanced Physics Topics with Enhanced Organization ---
 with st.sidebar:
     st.markdown("### 🧠 Physics GPT Pro - Complete Universe")
     
@@ -1046,25 +1046,50 @@ with st.sidebar:
     st.markdown("*Complete theoretical mastery across all domains*")
     st.markdown('</div>', unsafe_allow_html=True)
     
-    # Quick access topics
-    st.markdown("#### 🚀 Quick Access Topics")
-    cols = st.columns(2)
-    for i, topic in enumerate(all_physics_topics[:30]):  # Show first 30
-        col_idx = i % 2
-        with cols[col_idx]:
-            if st.button(topic, key=f"quick_{topic}"):
-                st.session_state.quick_topic = topic
+    # FIXED: Topic selection using selectbox to avoid duplicate keys
+    st.markdown("#### 🚀 Select Physics Topic")
     
-    # Show all topics toggle
-    if st.button("🔍 Explore All Physics Topics", key="show_all_topics"):
-        st.session_state.show_all_topics = True
+    selected_topic = st.selectbox(
+        "Choose a physics topic for detailed analysis:",
+        options=["Select a topic..."] + all_physics_topics,
+        key="topic_selector"
+    )
     
-    if hasattr(st.session_state, 'show_all_topics') and st.session_state.show_all_topics:
-        st.markdown("#### 🌌 Complete Physics Universe")
-        with st.expander("All Advanced Topics", expanded=True):
-            for i, topic in enumerate(all_physics_topics[30:]):
-                if st.button(topic, key=f"all_{topic}_{i}"):
+    if selected_topic != "Select a topic...":
+        st.session_state.selected_topic = selected_topic
+        st.success(f"✅ Selected: {selected_topic}")
+    
+    # FIXED: Category-based topic organization
+    st.markdown("#### 📚 Topics by Category")
+    
+    topic_categories = {
+        "🧮 Mathematical Physics": all_physics_topics[:10],
+        "⚛️ Classical Mechanics": all_physics_topics[10:23],
+        "🌊 Quantum Mechanics": all_physics_topics[23:38],
+        "⚡ Electromagnetic Theory": all_physics_topics[38:50],
+        "🔥 Statistical Mechanics": all_physics_topics[50:62],
+        "💎 Solid State Physics": all_physics_topics[62:77],
+        "🔬 Atomic & Molecular": all_physics_topics[77:90],
+        "☢️ Nuclear & Particle": all_physics_topics[90:106],
+        "💻 Electronics": all_physics_topics[106:121],
+        "🌈 Optics & Photonics": all_physics_topics[121:134],
+        "🧊 Condensed Matter": all_physics_topics[134:148],
+        "🧬 Biophysics": all_physics_topics[148:164],
+        "🌌 Astrophysics": all_physics_topics[164:180],
+        "⚡ Plasma Physics": all_physics_topics[180:192],
+        "🖥️ Computational": all_physics_topics[192:206],
+        "🔧 Applied Physics": all_physics_topics[206:219],
+        "🔬 Experimental": all_physics_topics[219:]
+    }
+    
+    for category, topics in topic_categories.items():
+        with st.expander(f"{category} ({len(topics)} topics)"):
+            for i, topic in enumerate(topics):
+                # FIXED: Using unique keys with category prefix
+                unique_key = f"{category.split()[1].lower()}_{i}_{abs(hash(topic)) % 10000}"
+                if st.button(topic, key=unique_key):
                     st.session_state.selected_topic = topic
+                    st.rerun()
 
     # Enhanced exam resources
     st.markdown("### 📚 Elite Exam Preparation")
@@ -1168,8 +1193,6 @@ with st.form(key="physics_gpt_pro_form", clear_on_submit=False):
     default_question = ""
     if hasattr(st.session_state, 'selected_topic'):
         default_question = f"Provide comprehensive theoretical analysis with complete mathematical derivations for {st.session_state.selected_topic}, including historical development, current research, and advanced applications"
-    elif hasattr(st.session_state, 'quick_topic'):
-        default_question = f"Deliver ultra-detailed theoretical treatment of {st.session_state.quick_topic} with complete mathematical framework, multiple theoretical perspectives, and cutting-edge research insights"
     
     query = st.text_area(
         "🎯 Ask Physics GPT Pro for Revolutionary Theoretical Analysis:",
