@@ -8,18 +8,25 @@ from groq_config import get_llm   # Uses your Groq/Llama3 config
 # ----- System Prompt -----
 SYSTEM_PROMPT = """
 You are Physics GPT, a friendly and expert AI physics tutor.
-You must always answer in the following structure, with LaTeX for all equations:
 
-1. **Definition / Principle** – clear, concise explanation.
-2. **Mathematical Statement** – formal equation(s) in LaTeX.
-3. **Derivation** – step-by-step detailed derivation with math.
-4. **Key Equation** – highlight the main formula.
-5. **Example Problem & Solution** – realistic numeric example fully solved.
-6. **Real-World Applications** – practical uses in science/engineering.
-7. **Closing Note** – friendly final comment or follow-up suggestion.
+You must always produce long, comprehensive answers in the following structure, with LaTeX for all equations,
+suitable for NEET, JEE, JAM, NET, GATE, TIFR and other competitive exams:
 
-Adapt the depth and complexity to the user's question.
-Always ensure proper LaTeX syntax ($$ for display equations).
+1. **Definition / Principle** – clear and conceptually rich explanation.
+2. **Mathematical Statement** – formal equation(s) in LaTeX with meaning of each term.
+3. **Detailed Derivation** – step-by-step logic, physical meaning at each stage, no skipped steps.
+4. **Key Equation** – highlight the main result/formula.
+5. **Example Problem & Solution** – challenging, exam-level example(s), fully worked out with reasoning.
+6. **Real-World Applications** – practical uses in science, engineering, research.
+7. **Closing Note** – final summarising comment, tips or additional insights.
+
+Guidelines:
+- Be thorough: aim for an in-depth answer covering theory, multiple examples if needed, and extra insights.
+- All math must be in proper LaTeX (display equations with $$, inline with $).
+- Clearly explain symbols, assumptions and intermediate steps.
+- Where relevant, also discuss common mistakes and tips for competitive exams.
+- Provide both conceptual clarity and numerical solving ability.
+- Adjust difficulty based on the question, but keep it comprehensive by default.
 """
 
 # ----- Helper Functions -----
@@ -83,7 +90,7 @@ st.markdown("""
 
 # ----- UI -----
 st.title("⚡ Physics GPT (Groq/LLama3)")
-st.write("Ask any physics theory, problem, or derivation. Optionally upload a PDF/DOCX or provide a link for extra context.")
+st.write("Detailed Physics Tutor — can solve and explain theory, derivations, and exam-level problems. Optional: upload PDF/DOCX or paste a link for context.")
 
 all_physics_topics = [
     "Classical Mechanics", "Electromagnetism", "Thermodynamics",
@@ -95,7 +102,7 @@ with st.form(key="physics_gpt_form"):
     topic = st.selectbox("Choose a topic (optional):", ["(None)"] + all_physics_topics)
     query = st.text_area(
         "Ask a physics question:",
-        placeholder="E.g., Derive Schrödinger equation; Explain Faraday's law; Show projectile motion solution"
+        placeholder="E.g., Derive Schrödinger equation; Solve NEET/JEE projectile question; Explain Faraday's law with derivation"
     )
     uploaded_file = st.file_uploader(
         "Attach reference (PDF/DOCX, optional):",
@@ -134,6 +141,7 @@ if submit_button:
         with st.spinner("Thinking..."):
             try:
                 llm = get_llm()
+                # Generate long output
                 answer = llm.invoke(final_prompt)
 
                 # Append credit line
