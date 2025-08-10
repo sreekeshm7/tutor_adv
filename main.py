@@ -94,7 +94,7 @@ st.markdown("""
 """, unsafe_allow_html=True)
 
 # ----- UI -----
-st.title("⚡ Physics GPT (Groq/LLama3)")
+st.title("⚡ Physics GPT by SREEKESH M")
 st.write("Detailed Physics Tutor — can solve and explain theory, derivations, and exam-level problems. Optional: upload PDF/DOCX or paste a link for context.")
 
 all_physics_topics = [
@@ -159,6 +159,7 @@ if submit_button:
 
             except Exception as e:
                 st.error(f"Error from Groq API: {e}")
+
 
 
 
