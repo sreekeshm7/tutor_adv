@@ -120,7 +120,9 @@ if submit_button:
 
     # URL context
     if url_input:
-        context_text += "\n" + fetch_url_content(url_input)
+        url_text = fetch_url_content(url_input)
+        if url_text:
+            context_text += "\n" + url_text
 
     # User question
     user_input = query or (topic if topic != "(None)" else "")
