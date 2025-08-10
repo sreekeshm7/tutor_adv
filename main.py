@@ -141,14 +141,18 @@ if submit_button:
         with st.spinner("Thinking..."):
             try:
                 llm = get_llm()
-                # Generate long output
-                answer = llm.invoke(final_prompt)
+                response = llm.invoke(final_prompt)
 
-                # Append credit line
-                answer_with_credit = f"{answer}\n\n---\nPhysics GPT by Sreekesh M"
+                # Extract plain text from response
+                answer_text = response.content if hasattr(response, "content") else str(response)
 
-                # Output only the answer (formatted)
-                st.markdown(f'<div class="response-content">{answer_with_credit}</div>', unsafe_allow_html=True)
+                # Append credit
+                answer_with_credit = f"{answer_text}\n\n---\n*Physics GPT by Sreekesh M*"
+
+                # Render cleanly in Markdown (so LaTeX works)
+                st.markdown(answer_with_credit)
 
             except Exception as e:
                 st.error(f"Error from Groq API: {e}")
+
+
