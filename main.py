@@ -27,9 +27,9 @@ suitable for NEET, JEE, JAM, NET, GATE, TIFR and other competitive exams:
 Guidelines:
 - Be very thorough for derivations: include ALL steps, no jumps.
 - Use proper LaTeX for ALL mathematical expressions
-- For inline math, use \\( and \\) 
-- For display equations, use \\[ and \\]
-- Never use $ or $$ for math - only \\( \\) and \\[ \\]
+- For inline math, use $...$
+- For display equations, use $$...$$
+- Always use standard LaTeX symbols: \\mathbf{E}, \\nabla, \\cdot, \\times, \\varepsilon, \\rho, etc.
 - Explain symbols, constants, and reasoning from basics.
 - Discuss common pitfalls and alternate derivation methods where relevant.
 - Provide exam-focused insights.
@@ -76,30 +76,32 @@ def build_prompt(context, question):
 USER QUESTION: {question}
 """
 
+def process_math_expressions(text):
+    """Convert common LaTeX expressions to Streamlit's format and display properly"""
+    import re
+    
+    # Split text by lines to process each line
+    lines = text.split('\n')
+    processed_lines = []
+    
+    for line in lines:
+        # Check if line contains LaTeX expressions
+        if '$' in line or '\\[' in line or '\\(' in line:
+            # Convert display math \[ \] to $$
+            line = re.sub(r'\\\[(.*?)\\\]', r'$$\1$$', line, flags=re.DOTALL)
+            # Convert inline math \( \) to $
+            line = re.sub(r'\\\((.*?)\\\)', r'$\1$', line, flags=re.DOTALL)
+            
+        processed_lines.append(line)
+    
+    return '\n'.join(processed_lines)
+
 # ---------------------------------------------------
-# Streamlit Config with MathJax
+# Streamlit Config
 # ---------------------------------------------------
 st.set_page_config(page_title="⚡ Physics GPT", layout="wide")
 
-# Add MathJax configuration for LaTeX rendering
-st.markdown("""
-<script type="text/x-mathjax-config">
-MathJax.Hub.Config({
-  tex2jax: {
-    inlineMath: [['\\(', '\\)']],
-    displayMath: [['\\[', '\\]']],
-    processEscapes: true,
-    processEnvironments: true
-  },
-  displayAlign: "center",
-  CommonHTML: { linebreaks: { automatic: true } },
-  "HTML-CSS": { linebreaks: { automatic: true } }
-});
-</script>
-<script type="text/javascript" async src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.7/MathJax.js?config=TeX-MML-AM_CHTML"></script>
-""", unsafe_allow_html=True)
-
-# Custom Styling for Better LaTeX & Mobile
+# Custom Styling
 st.markdown("""
 <style>
 .response-content {
@@ -112,13 +114,10 @@ st.markdown("""
 .response-content h2 { font-size: 1.2rem; color: #2d5aa0; }
 .response-content h3 { font-size: 1.1rem; color: #4472c4; }
 .response-content h4 { font-size: 1rem; color: #5b9bd5; }
-.mjx-chtml { font-size: 1.1em !important; }
-.MathJax_Display { margin: 1em 0 !important; }
 @media (max-width:768px) {
     .main-container { padding: 0.6rem; margin: 0.4rem; }
     .response-content { font-size: 1rem; }
     .main-title { font-size: 1.1rem; }
-    .mjx-chtml { font-size: 1em !important; }
 }
 </style>
 """, unsafe_allow_html=True)
@@ -183,20 +182,11 @@ if submit_button:
                 response = llm.invoke(final_prompt)
                 answer_text = response.content if hasattr(response, "content") else str(response)
 
-                # Display response with proper MathJax rendering
-                with st.container():
-                    st.markdown(f"""
-                    <div class="response-content">
-                    {answer_text}
-                    </div>
-                    """, unsafe_allow_html=True)
-                    
-                    # Force MathJax to process the new content
-                    st.markdown("""
-                    <script type="text/javascript">
-                    MathJax.Hub.Queue(["Typeset", MathJax.Hub]);
-                    </script>
-                    """, unsafe_allow_html=True)
+                # Process and display the response with proper math rendering
+                processed_text = process_math_expressions(answer_text)
+                
+                # Use Streamlit's markdown which supports LaTeX
+                st.markdown(processed_text, unsafe_allow_html=True)
 
                 st.markdown("<br><hr><p style='text-align:center'>⚡ Physics GPT by <b>Sreekesh M</b></p>", unsafe_allow_html=True)
 
