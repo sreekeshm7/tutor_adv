@@ -13,7 +13,7 @@ You must always produce long, comprehensive answers in the following structure,
 suitable for NEET, JEE, JAM, NET, GATE, TIFR and other competitive exams:
 
 1. **Definition / Principle** – clear and conceptually rich explanation.
-2. **Mathematical Statement** – formal equation(s) in LaTeX with meaning of each term.
+2. **Mathematical Statement** – formal equation(s) with meaning of each term.
 3. **Detailed Derivation** – step-by-step derivation with no skipped steps, starting from first principles.
    - Begin with assumptions and given conditions.
    - Justify each mathematical manipulation physically and logically.
@@ -26,7 +26,10 @@ suitable for NEET, JEE, JAM, NET, GATE, TIFR and other competitive exams:
 
 Guidelines:
 - Be very thorough for derivations: include ALL steps, no jumps.
-- Use proper LaTeX for all math (use $$ for display equations, $ for inline).
+- Use proper LaTeX for ALL mathematical expressions
+- For inline math, use \\( and \\) 
+- For display equations, use \\[ and \\]
+- Never use $ or $$ for math - only \\( \\) and \\[ \\]
 - Explain symbols, constants, and reasoning from basics.
 - Discuss common pitfalls and alternate derivation methods where relevant.
 - Provide exam-focused insights.
@@ -74,9 +77,27 @@ USER QUESTION: {question}
 """
 
 # ---------------------------------------------------
-# Streamlit Config
+# Streamlit Config with MathJax
 # ---------------------------------------------------
 st.set_page_config(page_title="⚡ Physics GPT", layout="wide")
+
+# Add MathJax configuration for LaTeX rendering
+st.markdown("""
+<script type="text/x-mathjax-config">
+MathJax.Hub.Config({
+  tex2jax: {
+    inlineMath: [['\\(', '\\)']],
+    displayMath: [['\\[', '\\]']],
+    processEscapes: true,
+    processEnvironments: true
+  },
+  displayAlign: "center",
+  CommonHTML: { linebreaks: { automatic: true } },
+  "HTML-CSS": { linebreaks: { automatic: true } }
+});
+</script>
+<script type="text/javascript" async src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.7/MathJax.js?config=TeX-MML-AM_CHTML"></script>
+""", unsafe_allow_html=True)
 
 # Custom Styling for Better LaTeX & Mobile
 st.markdown("""
@@ -84,16 +105,20 @@ st.markdown("""
 .response-content {
     padding: 1.2rem;
     font-size: 1.05rem;
-    line-height: 1.6;
+    line-height: 1.8;
+    font-family: 'Times New Roman', serif;
 }
-.response-content h1 { font-size: 1.4rem; }
-.response-content h2 { font-size: 1.2rem; }
-.response-content h3 { font-size: 1.1rem; }
-.response-content h4 { font-size: 1rem; }
+.response-content h1 { font-size: 1.4rem; color: #1f4e79; }
+.response-content h2 { font-size: 1.2rem; color: #2d5aa0; }
+.response-content h3 { font-size: 1.1rem; color: #4472c4; }
+.response-content h4 { font-size: 1rem; color: #5b9bd5; }
+.mjx-chtml { font-size: 1.1em !important; }
+.MathJax_Display { margin: 1em 0 !important; }
 @media (max-width:768px) {
     .main-container { padding: 0.6rem; margin: 0.4rem; }
     .response-content { font-size: 1rem; }
     .main-title { font-size: 1.1rem; }
+    .mjx-chtml { font-size: 1em !important; }
 }
 </style>
 """, unsafe_allow_html=True)
@@ -158,12 +183,20 @@ if submit_button:
                 response = llm.invoke(final_prompt)
                 answer_text = response.content if hasattr(response, "content") else str(response)
 
-                # Final Output with MathJax for LaTeX rendering
-                st.markdown(f"""
-                <div class="response-content">
-                {answer_text}
-                </div>
-                """, unsafe_allow_html=True)
+                # Display response with proper MathJax rendering
+                with st.container():
+                    st.markdown(f"""
+                    <div class="response-content">
+                    {answer_text}
+                    </div>
+                    """, unsafe_allow_html=True)
+                    
+                    # Force MathJax to process the new content
+                    st.markdown("""
+                    <script type="text/javascript">
+                    MathJax.Hub.Queue(["Typeset", MathJax.Hub]);
+                    </script>
+                    """, unsafe_allow_html=True)
 
                 st.markdown("<br><hr><p style='text-align:center'>⚡ Physics GPT by <b>Sreekesh M</b></p>", unsafe_allow_html=True)
 
