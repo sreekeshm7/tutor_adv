@@ -12,9 +12,10 @@ def get_llm():
         raise ValueError("GROQ_API_KEY not set in .env file or environment variables.")
     
     return ChatGroq(
-        model="deepseek-r1-distill-llama-70b",
+        model="openai/gpt-oss-120b",
         api_key=api_key
 
     )
+
 
 
