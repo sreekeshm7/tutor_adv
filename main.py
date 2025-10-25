@@ -1,7 +1,7 @@
 import streamlit as st
 from groq_config import get_llm
 from langchain_core.prompts import ChatPromptTemplate
-from langchain.chains.llm import LLMChain
+from langchain_core.output_parsers import StrOutputParser
 
 
 # --- System Prompt ---
@@ -13,7 +13,7 @@ Your responsibilities:
 - Use step-by-step problem-solving, relevant equations, and mathematical derivations.
 - Explain the underlying physics intuitively, building from first principles.
 - Include real-world examples or analogies wherever helpful.
-- Use LaTeX-style math formatting for clarity in equations.
+- Use LaTeX-style math formatting for clarity in equations (use $...$ for inline and $$...$$ for display equations).
 - When appropriate, include graphs, diagrams, or brief derivations to aid understanding.
 - Clearly state assumptions, boundary conditions, and approximations used in derivations or numerical solutions.
 - Keep your answers focused on the question. Avoid philosophical, vague, or unrelated explanations.
@@ -28,7 +28,11 @@ If a question is ambiguous, clearly state assumptions before answering.
 
 
 # --- Streamlit Config ---
-st.set_page_config(page_title="🧠 Physics Tutor – JAM/NET/GATE", page_icon="🔬", layout="centered")
+st.set_page_config(
+    page_title="🧠 Physics Tutor – JAM/NET/GATE", 
+    page_icon="🔬", 
+    layout="centered"
+)
 
 # --- Custom CSS ---
 st.markdown("""
@@ -43,14 +47,14 @@ st.markdown("""
             color: #333333;
             margin-bottom: 1rem;
         }
-        .question-box input {
+        .stTextInput > div > div > input {
             background-color: #ffffff;
             border: 1px solid #cccccc;
             border-radius: 8px;
             padding: 0.75rem;
             font-size: 1rem;
         }
-        .submit-button {
+        .stButton > button {
             width: 100%;
             background-color: #0066cc;
             color: white;
@@ -61,7 +65,10 @@ st.markdown("""
             font-weight: 600;
             margin-top: 1rem;
         }
-        .answer-box {
+        .stButton > button:hover {
+            background-color: #0052a3;
+        }
+        div[data-testid="stMarkdownContainer"] > div.answer-box {
             background-color: white;
             border: 1px solid #dddddd;
             border-radius: 12px;
@@ -76,24 +83,64 @@ st.markdown("""
 """, unsafe_allow_html=True)
 
 # --- Title ---
-st.markdown('<div class="main-title">🧠 Physics Tutor by Sreekesh M </div>', unsafe_allow_html=True)
+st.markdown(
+    '<div class="main-title">🧠 Physics Tutor by Sreekesh M</div>', 
+    unsafe_allow_html=True
+)
+
+# --- Session State for Chat History (Optional Enhancement) ---
+if "messages" not in st.session_state:
+    st.session_state.messages = []
 
 # --- Form Input ---
 with st.form(key="physics_form"):
-    query = st.text_input("📌 Enter your Physics question below:", placeholder="e.g., Derive the Schrödinger equation.", key="question")
+    query = st.text_input(
+        "📌 Enter your Physics question below:", 
+        placeholder="e.g., Derive the Schrödinger equation.",
+        key="question"
+    )
     submit_button = st.form_submit_button("🚀 Get Answer")
 
 # --- Generate Answer ---
 if submit_button and query:
     with st.spinner("🧠 Thinking..."):
-        llm = get_llm()
-        prompt = ChatPromptTemplate.from_messages([
-            ("system", SYSTEM_PROMPT),
-            ("human", "{question}")
-        ])
-        chain = LLMChain(llm=llm, prompt=prompt)
-        response = chain.run({"question": query})
+        try:
+            # Get LLM from groq_config
+            llm = get_llm()
+            
+            # Create prompt template
+            prompt = ChatPromptTemplate.from_messages([
+                ("system", SYSTEM_PROMPT),
+                ("human", "{question}")
+            ])
+            
+            # Modern LCEL chain (replaces deprecated LLMChain)
+            output_parser = StrOutputParser()
+            chain = prompt | llm | output_parser
+            
+            # Invoke the chain
+            response = chain.invoke({"question": query})
+            
+            # Store in session state (optional)
+            st.session_state.messages.append({
+                "question": query,
+                "answer": response
+            })
+            
+            # Display the response
+            st.markdown("### 📖 Answer:")
+            
+            # Use st.write for proper LaTeX rendering
+            st.write(response)
+            
+        except Exception as e:
+            st.error(f"❌ An error occurred: {str(e)}")
+            st.info("Please check your API key and internet connection.")
 
-        st.markdown('<div class="answer-box">{}</div>'.format(response), unsafe_allow_html=True)
-
-
+# --- Optional: Display Chat History ---
+if st.session_state.messages:
+    with st.expander("📚 View Previous Questions", expanded=False):
+        for i, msg in enumerate(reversed(st.session_state.messages[:-1]), 1):
+            st.markdown(f"**Q{i}:** {msg['question']}")
+            st.markdown(f"*A:* {msg['answer'][:200]}...")
+            st.divider()
