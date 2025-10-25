@@ -4,6 +4,7 @@ langchain.verbose = False
 langchain.debug = False
 langchain.llm_cache = False
 
+import re
 import streamlit as st
 from groq_config import get_llm
 from langchain_core.prompts import ChatPromptTemplate
@@ -19,7 +20,15 @@ Your responsibilities:
 - Use step-by-step problem-solving, relevant equations, and mathematical derivations.
 - Explain the underlying physics intuitively, building from first principles.
 - Include real-world examples or analogies wherever helpful.
-- Use LaTeX-style math formatting for clarity in equations (use $...$ for inline and $$...$$ for display equations).
+- Use proper LaTeX math formatting for clarity in equations.
+- **CRITICAL MATH FORMATTING RULES:**
+  * For display equations (standalone), use: \\[ equation \\]
+  * For inline math (within text), use: \\( symbol \\)
+  * NEVER use plain brackets [ ] or parentheses ( ) for math
+  * Use \\boxed{} for final answers
+  * Use proper LaTeX commands: \\mathbf, \\nabla, \\cdot, \\oint, \\int, \\frac, etc.
+  * Example display: \\[ E = \\frac{q}{4\\pi\\varepsilon_0 r^2} \\]
+  * Example inline: The electric field \\( \\mathbf{E} \\) is radial.
 - When appropriate, include graphs, diagrams, or brief derivations to aid understanding.
 - Clearly state assumptions, boundary conditions, and approximations used in derivations or numerical solutions.
 - Keep your answers focused on the question. Avoid philosophical, vague, or unrelated explanations.
@@ -33,6 +42,51 @@ If a question is ambiguous, clearly state assumptions before answering.
 """
 
 
+# --- LaTeX Renderer Function ---
+def render_physics_response(text: str):
+    """
+    Renders LLM response with proper LaTeX equation formatting.
+    Converts bracketed equations to proper LaTeX delimiters.
+    """
+    # Normalize line endings
+    content = text.replace("\r\n", "\n")
+    
+    # Pattern to detect display math in brackets: [ \equation ]
+    display_pattern = re.compile(
+        r'\[\s*(\\(?:boxed|displaystyle|begin|oint|int|sum|prod|frac|nabla|mathbf|vec|sqrt|alpha|beta|gamma|delta|epsilon|varepsilon|theta|lambda|mu|rho|sigma|omega|Omega|cdot|times|pm|infty|partial|nabla)[^\]]*)\s*\]',
+        re.MULTILINE | re.DOTALL
+    )
+    
+    # Pattern to detect inline math in parentheses: ( \symbol )
+    inline_pattern = re.compile(
+        r'\(\s*(\\(?:mathbf|vec|alpha|beta|gamma|delta|epsilon|varepsilon|theta|lambda|mu|rho|sigma|omega|nabla|cdot|times|pm|frac|sqrt|partial|text|mathrm)[^\)]*)\s*\)',
+        re.MULTILINE
+    )
+    
+    # Convert bracketed display math to \[ \]
+    content = display_pattern.sub(r'\\[\1\\]', content)
+    
+    # Convert parenthesized inline math to \( \)
+    content = inline_pattern.sub(r'\\(\1\\)', content)
+    
+    # Split content into blocks by double newlines
+    blocks = content.split('\n\n')
+    
+    for block in blocks:
+        block = block.strip()
+        if not block:
+            continue
+            
+        # Check if entire block is a display equation
+        if block.startswith('\\[') and block.endswith('\\]'):
+            # Extract equation and render with st.latex
+            equation = block[2:-2].strip()
+            st.latex(equation)
+        else:
+            # Render as markdown (inline math will be processed)
+            st.markdown(block, unsafe_allow_html=False)
+
+
 # --- Streamlit Config ---
 st.set_page_config(
     page_title="🧠 Physics Tutor – JAM/NET/GATE", 
@@ -40,6 +94,22 @@ st.set_page_config(
     layout="centered",
     initial_sidebar_state="collapsed"
 )
+
+# --- Load MathJax for inline LaTeX rendering ---
+st.markdown("""
+<script>
+window.MathJax = {
+  tex: {
+    inlineMath: [['\\\\(', '\\\\)']],
+    displayMath: [['\\\\[', '\\\\]']]
+  },
+  svg: {
+    fontCache: 'global'
+  }
+};
+</script>
+<script async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-svg.js"></script>
+""", unsafe_allow_html=True)
 
 # --- Enhanced Dark Theme CSS ---
 st.markdown("""
@@ -137,7 +207,7 @@ st.markdown("""
             border: 1px solid rgba(102, 126, 234, 0.2) !important;
             border-radius: 16px !important;
             padding: 1.5rem !important;
-            margin-top: 2rem !important;
+            margin-top: 1rem !important;
             color: #e2e8f0 !important;
             line-height: 1.8 !important;
             box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3) !important;
@@ -159,8 +229,8 @@ st.markdown("""
             border-radius: 4px !important;
         }
         
-        /* LaTeX rendering */
-        .katex {
+        /* LaTeX rendering - light color for dark theme */
+        .katex, .MathJax, mjx-container {
             color: #e2e8f0 !important;
         }
         
@@ -204,7 +274,7 @@ if "messages" not in st.session_state:
 with st.form(key="physics_form"):
     query = st.text_input(
         "📌 Enter your Physics question below:", 
-        placeholder="e.g., Derive the Schrödinger equation.",
+        placeholder="e.g., Derive the Schrödinger equation or Explain Gauss's Law",
         key="question"
     )
     submit_button = st.form_submit_button("🚀 Get Answer")
@@ -235,13 +305,14 @@ if submit_button and query:
                 "answer": response
             })
             
-            # Display the response
+            # Display the response with proper LaTeX rendering
             st.markdown("### 📖 Answer:")
-            st.write(response)
+            render_physics_response(response)
             
         except Exception as e:
             st.error(f"❌ An error occurred: {str(e)}")
             st.info("Please check your API key and internet connection.")
+            st.code(f"Debug info: {type(e).__name__}")
 
 # --- Display Chat History ---
 if st.session_state.messages:
@@ -249,5 +320,6 @@ if st.session_state.messages:
         for i, msg in enumerate(reversed(st.session_state.messages[:-1] if len(st.session_state.messages) > 1 else []), 1):
             st.markdown(f"**Q{i}:** {msg['question']}")
             with st.container():
-                st.markdown(msg['answer'][:300] + "..." if len(msg['answer']) > 300 else msg['answer'])
+                preview = msg['answer'][:300] + "..." if len(msg['answer']) > 300 else msg['answer']
+                st.markdown(preview)
             st.divider()
