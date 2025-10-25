@@ -1,3 +1,9 @@
+# Fix for langchain verbose attribute error
+import langchain
+langchain.verbose = False
+langchain.debug = False
+langchain.llm_cache = False
+
 import streamlit as st
 from groq_config import get_llm
 from langchain_core.prompts import ChatPromptTemplate
