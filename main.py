@@ -1,6 +1,6 @@
 import streamlit as st
 from groq_config import get_llm
-from langchain.prompts import ChatPromptTemplate
+from langchain_core.prompts import ChatPromptTemplate
 from langchain.chains import LLMChain
 
 # --- System Prompt ---
@@ -94,3 +94,4 @@ if submit_button and query:
         response = chain.run({"question": query})
 
         st.markdown('<div class="answer-box">{}</div>'.format(response), unsafe_allow_html=True)
+
