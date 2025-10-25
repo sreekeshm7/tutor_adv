@@ -1,244 +1,96 @@
 import streamlit as st
-import requests
-from PyPDF2 import PdfReader
-import docx
-from groq_config import get_llm  # Uses your Groq/Llama3 config
-import re
+from groq_config import get_llm
+from langchain.prompts import ChatPromptTemplate
+from langchain.chains import LLMChain
 
-# ---------------------------------------------------
-# SYSTEM PROMPT (Enhanced for Competitive Physics)
-# ---------------------------------------------------
+# --- System Prompt ---
 SYSTEM_PROMPT = """
-You are Physics GPT, a friendly and expert AI physics tutor.
-You must always produce long, comprehensive answers in the following structure,
-suitable for NEET, JEE, JAM, NET, GATE, TIFR and other competitive exams:
+You are a highly intelligent and professional Physics Tutor with expertise in competitive exams such as IIT-JAM, CSIR-NET, and GATE Physics. 
 
-1. **Definition / Principle** – clear and conceptually rich explanation.
-2. **Mathematical Statement** – formal equation(s) with meaning of each term.
-3. **Detailed Derivation** – step-by-step derivation with no skipped steps, starting from first principles.
-4. **Key Equation** – highlight the main result/formula.
-5. **Example Problem & Solution** – challenging, exam-level example(s), fully worked out.
-6. **Real-World Applications** – practical uses in science, engineering, and research.
-7. **Closing Note** – summarising comment, tips, or additional insights for students.
+Your responsibilities:
+- Provide conceptually sound, accurate, and syllabus-aligned explanations.
+- Use step-by-step problem-solving, relevant equations, and mathematical derivations.
+- Explain the underlying physics intuitively, building from first principles.
+- Include real-world examples or analogies wherever helpful.
+- Use LaTeX-style math formatting for clarity in equations.
+- When appropriate, include graphs, diagrams, or brief derivations to aid understanding.
+- Clearly state assumptions, boundary conditions, and approximations used in derivations or numerical solutions.
+- Keep your answers focused on the question. Avoid philosophical, vague, or unrelated explanations.
+- When multiple methods exist, briefly mention alternative approaches.
 
-CRITICAL MATH FORMATTING RULES:
-- Use ONLY standard LaTeX notation
-- For inline math: $mathematical_expression$
-- For display equations: $$mathematical_expression$$  
-- Use proper LaTeX commands: \\mathbf{E}, \\nabla, \\varepsilon, \\rho, \\int, \\oint, \\cdot, \\times, etc.
-- For fractions: \\frac{numerator}{denominator}
-- For subscripts: E_{field}, for superscripts: R^{2}
-- For vectors: \\mathbf{E}, \\mathbf{r}, \\hat{r}
-- Always use proper spacing in equations
+Respond in a teaching tone, suitable for students aiming for high scores in national-level physics exams.
 
-Example correct format:
-The electric field is $\\mathbf{E} = \\frac{1}{4\\pi\\varepsilon_0} \\frac{q}{r^2} \\hat{r}$.
+Always assume the student has a basic undergraduate-level understanding of physics and mathematics, but may need guidance in advanced applications and exam tricks.
 
-The integral form of Gauss's law is:
-$$\\oint_S \\mathbf{E} \\cdot d\\mathbf{A} = \\frac{Q_{enc}}{\\varepsilon_0}$$
-
-Guidelines:
-- Be very thorough for derivations: include ALL steps, no jumps.
-- Explain symbols, constants, and reasoning from basics.
-- Discuss common pitfalls and alternate derivation methods where relevant.
-- Provide exam-focused insights.
+If a question is ambiguous, clearly state assumptions before answering.
 """
 
-# ---------------------------------------------------
-# Helper Functions
-# ---------------------------------------------------
-def extract_text_from_pdf(file):
-    """Extracts text from uploaded PDF"""
-    text = ""
-    try:
-        pdf_reader = PdfReader(file)
-        for page in pdf_reader.pages:
-            page_text = page.extract_text()
-            if page_text:
-                text += page_text + "\n"
-    except Exception:
-        pass
-    return text
 
-def extract_text_from_docx(file):
-    """Extracts text from uploaded DOCX"""
-    try:
-        doc = docx.Document(file)
-        return "\n".join([p.text for p in doc.paragraphs if p.text.strip()])
-    except Exception:
-        return ""
+# --- Streamlit Config ---
+st.set_page_config(page_title="🧠 Physics Tutor – JAM/NET/GATE", page_icon="🔬", layout="centered")
 
-def fetch_url_content(url):
-    """Fetches text content from a URL"""
-    try:
-        r = requests.get(url, timeout=10)
-        if r.status_code == 200:
-            return r.text
-        return ""
-    except Exception:
-        return ""
-
-def build_prompt(context, question):
-    """Builds final prompt for LLM"""
-    return f"""{SYSTEM_PROMPT}
-{f"REFERENCE MATERIAL:\n{context}\n" if context else ""}
-USER QUESTION: {question}
-"""
-
-def clean_latex_expressions(text):
-    """Clean and properly format LaTeX expressions for Streamlit"""
-    
-    # Remove problematic characters and fix common issues
-    text = text.replace('!', '')  # Remove exclamation marks in math
-    text = text.replace(',', ' ')  # Clean up comma spacing in math
-    text = text.replace(';;', ' ')  # Remove double semicolons
-    
-    # Fix display math brackets
-    text = re.sub(r'\[\s*\\begin\{aligned\}', r'$$\\begin{aligned}', text)
-    text = re.sub(r'\\end\{aligned\}\s*\\tag\{[^}]*\}\s*\]', r'\\end{aligned}$$', text)
-    text = re.sub(r'\[\s*([^]]+?)\s*\\tag\{[^}]*\}\s*\]', r'$$\1$$', text)
-    text = re.sub(r'\[\s*([^]]+?)\s*\]', r'$$\1$$', text)
-    
-    # Fix inline math
-    text = re.sub(r'\(([^)]*?\\[a-zA-Z]+[^)]*?)\)', r'$\1$', text)
-    
-    # Clean up boxed equations
-    text = re.sub(r'\\boxed\{\\displaystyle\s*([^}]+)\}', r'\\boxed{\1}', text)
-    
-    # Fix common LaTeX commands
-    text = re.sub(r'\\mathbf\{([^}]+)\}', r'\\mathbf{\1}', text)
-    text = re.sub(r'\\varepsilon_\{0\}', r'\\varepsilon_0', text)
-    text = re.sub(r'\\varepsilon_\{([^}]+)\}', r'\\varepsilon_{\1}', text)
-    
-    # Fix spacing issues
-    text = re.sub(r'\s+', ' ', text)
-    text = re.sub(r'\s*\$\s*', '$', text)
-    
-    return text
-
-def render_physics_content(text):
-    """Render physics content with proper LaTeX formatting"""
-    
-    # Clean the LaTeX first
-    cleaned_text = clean_latex_expressions(text)
-    
-    # Split into sections and render
-    sections = cleaned_text.split('\n\n')
-    
-    for section in sections:
-        if section.strip():
-            # Check if this section contains display math
-            if '$$' in section:
-                parts = section.split('$$')
-                for i, part in enumerate(parts):
-                    if i % 2 == 0:  # Text part
-                        if part.strip():
-                            st.markdown(part.strip())
-                    else:  # Math part
-                        if part.strip():
-                            st.latex(part.strip())
-            else:
-                # Regular markdown content
-                st.markdown(section.strip())
-
-# ---------------------------------------------------
-# Streamlit Config
-# ---------------------------------------------------
-st.set_page_config(page_title="⚡ Physics GPT", layout="wide")
-
-# Custom Styling
+# --- Custom CSS ---
 st.markdown("""
-<style>
-.stMarkdown {
-    font-family: 'Times New Roman', serif;
-    font-size: 1.05rem;
-    line-height: 1.8;
-}
-.stLatex {
-    font-size: 1.1rem !important;
-    margin: 1rem 0;
-}
-div[data-testid="stMarkdownContainer"] p {
-    margin-bottom: 1rem;
-}
-h1, h2, h3, h4 {
-    color: #1f4e79;
-    margin-top: 1.5rem;
-    margin-bottom: 1rem;
-}
-@media (max-width:768px) {
-    .stMarkdown { font-size: 1rem; }
-    .stLatex { font-size: 1rem !important; }
-}
-</style>
+    <style>
+        html, body, [class*="css"] {
+            font-family: 'Segoe UI', sans-serif;
+            background-color: #f4f6fa;
+        }
+        .main-title {
+            text-align: center;
+            font-size: 2.2rem;
+            color: #333333;
+            margin-bottom: 1rem;
+        }
+        .question-box input {
+            background-color: #ffffff;
+            border: 1px solid #cccccc;
+            border-radius: 8px;
+            padding: 0.75rem;
+            font-size: 1rem;
+        }
+        .submit-button {
+            width: 100%;
+            background-color: #0066cc;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            padding: 0.6rem;
+            font-size: 1rem;
+            font-weight: 600;
+            margin-top: 1rem;
+        }
+        .answer-box {
+            background-color: white;
+            border: 1px solid #dddddd;
+            border-radius: 12px;
+            padding: 1.2rem;
+            font-size: 1.05rem;
+            color: #111;
+            line-height: 1.6;
+            margin-top: 1.5rem;
+            box-shadow: 0px 2px 6px rgba(0,0,0,0.08);
+        }
+    </style>
 """, unsafe_allow_html=True)
 
-# ---------------------------------------------------
-# Streamlit UI
-# ---------------------------------------------------
-st.title("⚡ Physics GPT by Sreekesh M")
-st.write("Your AI-powered **Physics Tutor** — solve derivations, concepts, and exam-level problems. Upload PDFs/DOCX or links for context.")
+# --- Title ---
+st.markdown('<div class="main-title">🧠 Physics Tutor by Sreekesh M </div>', unsafe_allow_html=True)
 
-# Topics Dropdown
-all_physics_topics = [
-    "Classical Mechanics", "Electromagnetism", "Thermodynamics",
-    "Quantum Mechanics", "Relativity", "Optics", "Particle Physics",
-    "Astrophysics", "Fluid Mechanics", "Nuclear Physics"
-]
+# --- Form Input ---
+with st.form(key="physics_form"):
+    query = st.text_input("📌 Enter your Physics question below:", placeholder="e.g., Derive the Schrödinger equation.", key="question")
+    submit_button = st.form_submit_button("🚀 Get Answer")
 
-# Input Form
-with st.form(key="physics_gpt_form"):
-    topic = st.selectbox("Choose a topic (optional):", ["(None)"] + all_physics_topics)
-    query = st.text_area(
-        "Ask a physics question:",
-        placeholder="E.g., Derive Schrödinger equation; Solve NEET/JEE projectile problem; Explain Gauss's law"
-    )
-    uploaded_file = st.file_uploader(
-        "Attach reference (PDF/DOCX, optional):",
-        type=["pdf", "docx"]
-    )
-    url_input = st.text_input("Paste a link to physics content (optional):")
-    submit_button = st.form_submit_button("Get Physics Answer")
+# --- Generate Answer ---
+if submit_button and query:
+    with st.spinner("🧠 Thinking..."):
+        llm = get_llm()
+        prompt = ChatPromptTemplate.from_messages([
+            ("system", SYSTEM_PROMPT),
+            ("human", "{question}")
+        ])
+        chain = LLMChain(llm=llm, prompt=prompt)
+        response = chain.run({"question": query})
 
-# ---------------------------------------------------
-# Processing the Query
-# ---------------------------------------------------
-if submit_button:
-    context_text = ""
-    # File context
-    if uploaded_file:
-        if uploaded_file.type == "application/pdf":
-            context_text = extract_text_from_pdf(uploaded_file)
-        elif uploaded_file.type in [
-            "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
-            "application/msword"
-        ]:
-            context_text = extract_text_from_docx(uploaded_file)
-
-    # URL context
-    if url_input:
-        url_text = fetch_url_content(url_input)
-        if url_text:
-            context_text += "\n" + url_text
-
-    # User input handling
-    user_input = query or (topic if topic != "(None)" else "")
-    if not user_input.strip():
-        st.warning("⚠️ Please enter a question or select a topic.")
-    else:
-        final_prompt = build_prompt(context_text.strip(), user_input.strip())
-        with st.spinner("⚡ Solving..."):
-            try:
-                llm = get_llm()
-                response = llm.invoke(final_prompt)
-                answer_text = response.content if hasattr(response, "content") else str(response)
-
-                # Render the physics content with proper LaTeX
-                st.markdown("---")
-                render_physics_content(answer_text)
-                st.markdown("---")
-
-                st.markdown("<p style='text-align:center; margin-top: 2rem'>⚡ Physics GPT by <b>Sreekesh M</b></p>", unsafe_allow_html=True)
-
-            except Exception as e:
-                st.error(f"❌ Groq API Error: {e}")
+        st.markdown('<div class="answer-box">{}</div>'.format(response), unsafe_allow_html=True)
