@@ -30,65 +30,167 @@ If a question is ambiguous, clearly state assumptions before answering.
 # --- Streamlit Config ---
 st.set_page_config(
     page_title="🧠 Physics Tutor – JAM/NET/GATE", 
-    page_icon="🔬", 
-    layout="centered"
+    page_icon="🧠", 
+    layout="centered",
+    initial_sidebar_state="collapsed"
 )
 
-# --- Custom CSS ---
+# --- Enhanced Dark Theme CSS ---
 st.markdown("""
     <style>
-        html, body, [class*="css"] {
-            font-family: 'Segoe UI', sans-serif;
-            background-color: #f4f6fa;
+        /* Global dark theme */
+        .stApp {
+            background: linear-gradient(135deg, #0f1419 0%, #1a1f2e 100%);
         }
+        
+        /* Hide Streamlit branding */
+        #MainMenu {visibility: hidden;}
+        footer {visibility: hidden;}
+        header {visibility: hidden;}
+        
+        /* Title styling with gradient */
         .main-title {
             text-align: center;
-            font-size: 2.2rem;
-            color: #333333;
-            margin-bottom: 1rem;
+            font-size: 2.5rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 2rem;
+            padding: 1rem;
+            letter-spacing: 1px;
         }
+        
+        /* Form container */
+        .stForm {
+            background: rgba(26, 31, 46, 0.6);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(102, 126, 234, 0.2);
+            border-radius: 16px;
+            padding: 2rem;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+        }
+        
+        /* Label styling */
+        .stTextInput > label {
+            color: #a0aec0 !important;
+            font-size: 1rem !important;
+            font-weight: 500 !important;
+            margin-bottom: 0.5rem !important;
+        }
+        
+        /* Input field - dark theme */
         .stTextInput > div > div > input {
-            background-color: #ffffff;
-            border: 1px solid #cccccc;
-            border-radius: 8px;
-            padding: 0.75rem;
-            font-size: 1rem;
+            background-color: #1a1f2e !important;
+            border: 2px solid rgba(102, 126, 234, 0.3) !important;
+            border-radius: 12px !important;
+            padding: 0.875rem 1rem !important;
+            font-size: 1rem !important;
+            color: #e2e8f0 !important;
+            transition: all 0.3s ease !important;
         }
+        
+        .stTextInput > div > div > input:focus {
+            border-color: #667eea !important;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.2) !important;
+            background-color: #242938 !important;
+        }
+        
+        .stTextInput > div > div > input::placeholder {
+            color: #4a5568 !important;
+        }
+        
+        /* Button styling with gradient */
         .stButton > button {
             width: 100%;
-            background-color: #0066cc;
-            color: white;
-            border: none;
-            border-radius: 8px;
-            padding: 0.6rem;
-            font-size: 1rem;
-            font-weight: 600;
-            margin-top: 1rem;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
+            color: white !important;
+            border: none !important;
+            border-radius: 12px !important;
+            padding: 0.875rem 1.5rem !important;
+            font-size: 1.05rem !important;
+            font-weight: 600 !important;
+            margin-top: 1.25rem !important;
+            transition: all 0.3s ease !important;
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4) !important;
         }
+        
         .stButton > button:hover {
-            background-color: #0052a3;
+            transform: translateY(-2px) !important;
+            box-shadow: 0 6px 20px rgba(102, 126, 234, 0.6) !important;
         }
-        div[data-testid="stMarkdownContainer"] > div.answer-box {
-            background-color: white;
-            border: 1px solid #dddddd;
-            border-radius: 12px;
-            padding: 1.2rem;
-            font-size: 1.05rem;
-            color: #111;
-            line-height: 1.6;
-            margin-top: 1.5rem;
-            box-shadow: 0px 2px 6px rgba(0,0,0,0.08);
+        
+        .stButton > button:active {
+            transform: translateY(0) !important;
+        }
+        
+        /* Answer container */
+        div[data-testid="stMarkdownContainer"] {
+            background: rgba(26, 31, 46, 0.8) !important;
+            border: 1px solid rgba(102, 126, 234, 0.2) !important;
+            border-radius: 16px !important;
+            padding: 1.5rem !important;
+            margin-top: 2rem !important;
+            color: #e2e8f0 !important;
+            line-height: 1.8 !important;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3) !important;
+        }
+        
+        /* Answer heading */
+        div[data-testid="stMarkdownContainer"] h3 {
+            color: #667eea !important;
+            border-bottom: 2px solid rgba(102, 126, 234, 0.3) !important;
+            padding-bottom: 0.5rem !important;
+            margin-bottom: 1rem !important;
+        }
+        
+        /* Code blocks in answers */
+        div[data-testid="stMarkdownContainer"] code {
+            background-color: rgba(102, 126, 234, 0.1) !important;
+            color: #a78bfa !important;
+            padding: 0.2rem 0.4rem !important;
+            border-radius: 4px !important;
+        }
+        
+        /* LaTeX rendering */
+        .katex {
+            color: #e2e8f0 !important;
+        }
+        
+        /* Spinner */
+        .stSpinner > div {
+            border-top-color: #667eea !important;
+        }
+        
+        /* Expander for history */
+        .streamlit-expanderHeader {
+            background-color: rgba(26, 31, 46, 0.6) !important;
+            border: 1px solid rgba(102, 126, 234, 0.2) !important;
+            border-radius: 12px !important;
+            color: #e2e8f0 !important;
+        }
+        
+        .streamlit-expanderContent {
+            background-color: rgba(26, 31, 46, 0.4) !important;
+            border: 1px solid rgba(102, 126, 234, 0.2) !important;
+            border-radius: 0 0 12px 12px !important;
+        }
+        
+        /* Divider */
+        hr {
+            border-color: rgba(102, 126, 234, 0.2) !important;
         }
     </style>
 """, unsafe_allow_html=True)
 
-# --- Title ---
+# --- Title with Brain Emoji ---
 st.markdown(
     '<div class="main-title">🧠 Physics Tutor by Sreekesh M</div>', 
     unsafe_allow_html=True
 )
 
-# --- Session State for Chat History (Optional Enhancement) ---
+# --- Session State for Chat History ---
 if "messages" not in st.session_state:
     st.session_state.messages = []
 
@@ -114,14 +216,14 @@ if submit_button and query:
                 ("human", "{question}")
             ])
             
-            # Modern LCEL chain (replaces deprecated LLMChain)
+            # Modern LCEL chain
             output_parser = StrOutputParser()
             chain = prompt | llm | output_parser
             
             # Invoke the chain
             response = chain.invoke({"question": query})
             
-            # Store in session state (optional)
+            # Store in session state
             st.session_state.messages.append({
                 "question": query,
                 "answer": response
@@ -129,18 +231,17 @@ if submit_button and query:
             
             # Display the response
             st.markdown("### 📖 Answer:")
-            
-            # Use st.write for proper LaTeX rendering
             st.write(response)
             
         except Exception as e:
             st.error(f"❌ An error occurred: {str(e)}")
             st.info("Please check your API key and internet connection.")
 
-# --- Optional: Display Chat History ---
+# --- Display Chat History ---
 if st.session_state.messages:
     with st.expander("📚 View Previous Questions", expanded=False):
-        for i, msg in enumerate(reversed(st.session_state.messages[:-1]), 1):
+        for i, msg in enumerate(reversed(st.session_state.messages[:-1] if len(st.session_state.messages) > 1 else []), 1):
             st.markdown(f"**Q{i}:** {msg['question']}")
-            st.markdown(f"*A:* {msg['answer'][:200]}...")
+            with st.container():
+                st.markdown(msg['answer'][:300] + "..." if len(msg['answer']) > 300 else msg['answer'])
             st.divider()
